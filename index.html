@@ -3,26 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>樂理強化練習 - 鍵盤亂序版</title>
+    <title>橙色的樂理強化練習器（基礎版）</title>
     <style>
         body { font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: #f0f4f8; }
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; max-width: 500px; width: 100%; }
         .step-label { color: #3498db; font-weight: bold; font-size: 1.1em; }
         .instruction { font-size: 1em; color: #555; margin: 10px 0; min-height: 1.2em; }
         .notes-display { font-size: 2.5em; font-weight: bold; margin: 15px 0; padding: 15px; background: #f9f9f9; border: 2px dashed #ddd; border-radius: 12px; cursor: pointer; }
+        
         .input-container { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
-        .input-slot { width: 60px; height: 50px; border-bottom: 3px solid #bdc3c7; font-size: 1.5em; font-weight: bold; display: flex; align-items: center; justify-content: center; color: #2c3e50; }
-        .input-slot.filled { border-bottom-color: #3498db; color: #3498db; }
-        .ans-text { font-size: 1.8em; color: #27ae60; font-weight: bold; margin-bottom: 15px; min-height: 1.2em; visibility: hidden; }
+        .input-slot { width: 65px; height: 55px; border-bottom: 3px solid #bdc3c7; font-size: 1.4em; font-weight: bold; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        
+        /* 狀態顏色 */
+        .slot-correct { color: #27ae60 !important; border-bottom-color: #27ae60 !important; }
+        .slot-wrong { color: #e74c3c !important; border-bottom-color: #e74c3c !important; }
+        .slot-default { color: #3498db; border-bottom-color: #3498db; }
+
+        .ans-text { font-size: 1.4em; color: #7f8c8d; font-weight: bold; margin-bottom: 15px; min-height: 1.2em; visibility: hidden; }
+
         .keyboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
-        .key { padding: 15px 5px; background: #fff; border-radius: 10px; font-weight: bold; cursor: pointer; border: 2px solid #ecf0f1; transition: 0.1s; font-size: 1.2em; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .key:active { background: #3498db; color: white; border-color: #3498db; transform: scale(0.95); }
+        .key { padding: 15px 5px; background: #fff; border-radius: 10px; font-weight: bold; cursor: pointer; border: 2px solid #ecf0f1; transition: 0.1s; font-size: 1.1em; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .key:active { background: #3498db; color: white; transform: scale(0.95); }
         .key.control { background: #95a5a6; color: white; border: none; }
-        .key.control:active { background: #7f8c8d; }
+
         button#mainBtn { padding: 18px; font-size: 1.3em; cursor: pointer; border: none; border-radius: 12px; font-weight: bold; width: 100%; color: white; background: #2ecc71; margin-top: 20px; box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3); }
-        .btn-show { background: #3498db !important; box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3) !important; }
-        .btn-next { background: #e67e22 !important; box-shadow: 0 4px 10px rgba(230, 126, 34, 0.3) !important; }
+        .btn-show { background: #3498db !important; }
+        .btn-next { background: #e67e22 !important; }
         .clickable { background: #eef7ff !important; border-color: #3498db !important; }
+        .tip { font-size: 0.8em; color: #95a5a6; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -82,7 +90,6 @@
         }
     }
 
-    // 洗牌算法 (Fisher-Yates Shuffle)
     function shuffleArray(array) {
         const newArr = [...array];
         for (let i = newArr.length - 1; i > 0; i--) {
@@ -96,59 +103,36 @@
         const kb = document.getElementById("keyboard");
         kb.style.display = "grid";
         kb.innerHTML = "";
-        
         const isSol = (step === 3 || step === 4);
         const baseList = isSol ? solArr : namArr;
-        
-        // 對音符按鈕進行亂序處理
         const shuffledList = shuffleArray(baseList);
 
         shuffledList.forEach(val => {
             const k = document.createElement("div");
             k.className = "key";
             k.innerText = val;
-            k.onclick = () => addInput(val);
+            k.onclick = () => { if(!isAnsMode && userInputs.length < 4) { userInputs.push(val); updateSlots(); }};
             kb.appendChild(k);
         });
 
-        // 「返回」與「清除」固定在最後
         const back = document.createElement("div");
         back.className = "key control";
         back.innerText = "Back";
-        back.onclick = removeLast;
+        back.onclick = () => { if(!isAnsMode) { userInputs.pop(); updateSlots(); }};
         kb.appendChild(back);
 
         const clear = document.createElement("div");
         clear.className = "key control";
         clear.innerText = "Clear";
-        clear.onclick = clearAll;
+        clear.onclick = () => { if(!isAnsMode) { userInputs = []; updateSlots(); }};
         kb.appendChild(clear);
-    }
-
-    function addInput(val) {
-        if (isAnsMode || userInputs.length >= 4) return;
-        userInputs.push(val);
-        updateSlots();
-    }
-
-    function removeLast() {
-        if (isAnsMode) return;
-        userInputs.pop();
-        updateSlots();
-    }
-
-    function clearAll() {
-        if (isAnsMode) return;
-        userInputs = [];
-        updateSlots();
     }
 
     function updateSlots() {
         for (let i = 0; i < 4; i++) {
             const slot = document.getElementById("slot" + i);
             slot.innerText = userInputs[i] || "";
-            if (userInputs[i]) slot.classList.add("filled");
-            else slot.classList.remove("filled");
+            slot.className = "input-slot" + (userInputs[i] ? " slot-default" : "");
         }
     }
 
@@ -167,22 +151,22 @@
         lab.innerText = "Step " + step;
         userInputs = [];
         updateSlots();
-        renderKeyboard(); // 每次換題都會觸發亂序
+        renderKeyboard();
 
         if (step === 1) {
-            inst.innerText = "唱名 ➔ 音名 (Do ➔ C)";
+            inst.innerText = "唱名 ➔ 音名 (基礎對應)";
             q.innerText = notes.map(i => solArr[i]).join(" "); q.classList.add("clickable");
         } else if (step === 2) {
-            inst.innerText = "音名位移 (C ➔ D)";
+            inst.innerText = "音名 ➔ 下一個音名 (位移推算)";
             q.innerText = notes.map(i => namArr[i]).join(" ");
         } else if (step === 3) {
-            inst.innerText = "音名 ➔ 唱名 (D ➔ Re)";
+            inst.innerText = "音名 ➔ 唱名 (轉換練習)";
             q.innerText = notes.map(i => namArr[(i + 1) % 7]).join(" ");
         } else if (step === 4) {
-            inst.innerText = "唱名位移 (Re ➔ Mi)";
+            inst.innerText = "唱名 ➔ 下一個唱名 (位移推算)";
             q.innerText = notes.map(i => solArr[(i + 1) % 7]).join(" "); q.classList.add("clickable");
         } else if (step === 5) {
-            inst.innerText = "唱名 ➔ 音名 (Mi ➔ E)";
+            inst.innerText = "唱名 ➔ 音名 (轉換練習)";
             q.innerText = notes.map(i => solArr[(i + 2) % 7]).join(" "); q.classList.add("clickable");
         }
     }
@@ -201,9 +185,8 @@
 
         if (!isAnsMode) {
             isAnsMode = true;
-            btn.innerText = "下一階段";
+            btn.innerText = "下一步驟";
             btn.className = "btn-next";
-            a.style.visibility = "visible";
             
             let correct = [];
             let offset = 0;
@@ -214,7 +197,19 @@
             else if (step === 4) { correct = notes.map(i => solArr[(i + 2) % 7]); offset = 2; }
             else if (step === 5) { correct = notes.map(i => namArr[(i + 2) % 7]); }
 
+            // 判斷對錯並變色
+            for (let i = 0; i < 4; i++) {
+                const slot = document.getElementById("slot" + i);
+                if (userInputs[i] === correct[i]) {
+                    slot.className = "input-slot slot-correct";
+                } else {
+                    if (!userInputs[i]) slot.innerText = "X";
+                    slot.className = "input-slot slot-wrong";
+                }
+            }
+
             a.innerText = "正解：" + correct.join(" ");
+            a.style.visibility = "visible";
             if (offset > 0) { a.classList.add("clickable"); play(offset); }
             else { a.classList.remove("clickable"); }
         } else {
