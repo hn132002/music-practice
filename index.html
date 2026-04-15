@@ -198,4 +198,49 @@
         renderKeyboard(); startTimer();
         const jump = getJump();
         const getNoteStr = (idx, type, acc) => ((acc === 1) ? "♯" : (acc === 2 ? "♭" : "")) + (type === 'sol' ? solArr[idx % 7] : namArr[idx % 7]);
-        if (step === 1) { inst.innerText = "唱名 ➔ 音名"; q.innerText = notes.map((n
+        if (step === 1) { inst.innerText = "唱名 ➔ 音名"; q.innerText = notes.map((n, i) => getNoteStr(n, 'sol', accs[i])).join(" "); q.classList.add("clickable"); }
+        else if (step === 2) { inst.innerText = `音名位移 (+${jump})`; q.innerText = notes.map((n, i) => getNoteStr(n, 'nam', accs[i])).join(" "); q.classList.remove("clickable"); }
+        else if (step === 3) { inst.innerText = "音名 ➔ 唱名"; q.innerText = notes.map((n, i) => getNoteStr(n + jump, 'nam', accs[i])).join(" "); q.classList.remove("clickable"); }
+        else if (step === 4) { inst.innerText = `唱名位移 (+${jump})`; q.innerText = notes.map((n, i) => getNoteStr(n + jump, 'sol', accs[i])).join(" "); q.classList.add("clickable"); }
+        else if (step === 5) { inst.innerText = "唱名 ➔ 音名"; q.innerText = notes.map((n, i) => getNoteStr(n + jump * 2, 'sol', accs[i])).join(" "); q.classList.add("clickable"); }
+    }
+
+    function handleClick() {
+        // 1. 停止邏輯計時器
+        clearInterval(timerInt); 
+
+        // 2. 停止視覺計時條 (抓取當前寬度並凍結)
+        const bar = document.getElementById("timerBar");
+        const computedStyle = window.getComputedStyle(bar);
+        const currentWidth = computedStyle.getPropertyValue('width');
+        bar.style.transition = 'none'; // 移除動畫
+        bar.style.width = currentWidth; // 固定在目前的寬度
+
+        const a = document.getElementById("answerArea"), btn = document.getElementById("mainBtn");
+        if (notes.length === 0) { 
+            let p = [0,1,2,3,4,5,6]; while(notes.length < 4) notes.push(p.splice(Math.floor(Math.random()*p.length), 1)[0]); 
+            accs = generateAccidentals(); renderQuestion(); play(0, accs); return; 
+        }
+        const jump = getJump();
+        if (!isAnsMode) {
+            isAnsMode = true; btn.innerText = "下一階段"; btn.className = "btn-next";
+            let corr = [];
+            if (step === 1) corr = notes.map((n, i) => ((accs[i]===1?"♯":accs[i]===2?"♭":"")+namArr[n%7]));
+            else if (step === 2) corr = notes.map((n, i) => ((accs[i]===1?"♯":accs[i]===2?"♭":"")+namArr[(n+jump)%7]));
+            else if (step === 3) corr = notes.map((n, i) => ((accs[i]===1?"♯":accs[i]===2?"♭":"")+solArr[(n+jump)%7]));
+            else if (step === 4) corr = notes.map((n, i) => ((accs[i]===1?"♯":accs[i]===2?"♭":"")+solArr[(n+jump*2)%7]));
+            else if (step === 5) corr = notes.map((n, i) => ((accs[i]===1?"♯":accs[i]===2?"♭":"")+namArr[(n+jump*2)%7]));
+            for (let i = 0; i < 4; i++) { 
+                const s = document.getElementById("slot" + i); 
+                if (userInputs[i] === corr[i]) s.className = "input-slot slot-correct"; 
+                else { if (!userInputs[i]) s.innerText = "X"; s.className = "input-slot slot-wrong"; } 
+            }
+            a.innerText = "正解：" + corr.join(" "); a.style.visibility = "visible"; handleReplay('A');
+        } else {
+            if (step < 5) step++; else { notes = notes.map(n => (n + jump * 2) % 7); accs = generateAccidentals(); step = 2; }
+            renderQuestion(); if (step === 1) play(0, accs);
+        }
+    }
+</script>
+</body>
+</html>
