@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>樂理無限序列練習器</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 50px; background: #f0f4f8; color: #2c3e50; }
+        .card { background: white; padding: 40px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; max-width: 650px; width: 100%; border: 1px solid #e1e8ed; }
+        .step-label { color: #3498db; font-weight: 800; font-size: 1.4em; margin-bottom: 5px; letter-spacing: 2px; }
+        .cycle-info { color: #95a5a6; font-size: 0.9em; margin-bottom: 20px; font-weight: 500; }
+        .instruction { font-size: 1.2em; color: #34495e; margin-bottom: 25px; min-height: 1.5em; font-weight: 500; }
+        .notes-display { font-size: 3.5em; font-weight: 800; letter-spacing: 8px; margin: 20px 0; color: #2c3e50; min-height: 1.2em; display: flex; justify-content: center; align-items: center; background: #fbfcfd; border-radius: 16px; padding: 25px; border: 2px dashed #d1d8e0; }
+        .ans-section { border-top: 2px solid #f0f2f5; margin-top: 30px; padding-top: 25px; min-height: 160px; }
+        .ans-text { font-size: 2.8em; color: #27ae60; font-weight: bold; display: none; margin-bottom: 25px; }
+        button { padding: 15px 40px; font-size: 1.2em; cursor: pointer; border: none; border-radius: 12px; font-weight: 700; transition: 0.2s; box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2); }
+        .btn-show { background: #3498db; color: white; }
+        .btn-show:hover { background: #2980b9; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3); }
+        .btn-next { background: #e67e22; color: white; display: none; }
+        .btn-next:hover { background: #d35400; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(230, 126, 34, 0.3); }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div id="stepLabel" class="step-label">第一步</div>
+    <div id="cycleInfo" class="cycle-info">循環序列模式已啟動</div>
+    <div id="instruction" class="instruction">寫出這組唱名的音名</div>
+    <div id="questionArea" class="notes-display">...</div>
+    
+    <div class="ans-section">
+        <button id="showBtn" class="btn-show" onclick="showAnswer()">顯示答案</button>
+        <div id="answerArea" class="ans-text"></div>
+        <button id="nextBtn" class="btn-next" onclick="processFlow()">下一階段</button>
+    </div>
+</div>
+
+<script>
+    const solfegeArr = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si"];
+    const namesArr = ["C", "D", "E", "F", "G", "A", "B"];
+    
+    let currentIndices = []; 
+    let step = 1;
+
+    // 初始隨機取四個不重複的音
+    function getUniqueIndices() {
+        let pool = [0, 1, 2, 3, 4, 5, 6];
+        let result = [];
+        for (let i = 0; i < 4; i++) {
+            const randomIndex = Math.floor(Math.random() * pool.length);
+            const selected = pool.splice(randomIndex, 1)[0];
+            result.push(selected);
+        }
+        return result;
+    }
+
+    function init() {
+        currentIndices = getUniqueIndices();
+        updateUI();
+    }
+
+    function updateUI() {
+        const qArea = document.getElementById("questionArea");
+        const aArea = document.getElementById("answerArea");
+        const inst = document.getElementById("instruction");
+        const label = document.getElementById("stepLabel");
+
+        if (step === 1) {
+            label.innerText = "第一步 (起點)";
+            inst.innerText = "請寫出這組唱名的【音名】";
+            qArea.innerText = currentIndices.map(i => solfegeArr[i]).join(" ");
+            aArea.innerText = currentIndices.map(i => namesArr[i]).join(" ");
+        } 
+        else if (step === 2) {
+            label.innerText = "第二步 (推算)";
+            inst.innerText = "寫出剛才這組音名的【下一個音名】";
+            // 題目是第一步的答案
+            qArea.innerText = currentIndices.map(i => namesArr[i]).join(" ");
+            // 答案是索引 +1
+            aArea.innerText = currentIndices.map(i => namesArr[(i + 1) % 7]).join(" ");
+        } 
+        else if (step === 3) {
+            label.innerText = "第三步 (對應)";
+            inst.innerText = "寫出剛才這組音名的【對應唱名】";
+            // 題目是第二步的答案 (下一個音名)
+            const nextNames = currentIndices.map(i => namesArr[(i + 1) % 7]);
+            qArea.innerText = nextNames.join(" ");
+            // 答案是下一個音名對應的唱名
+            aArea.innerText = currentIndices.map(i => solfegeArr[(i + 1) % 7]).join(" ");
+        }
+    }
+
+    function showAnswer() {
+        document.getElementById("answerArea").style.display = "block";
+        document.getElementById("showBtn").style.display = "none";
+        document.getElementById("nextBtn").style.display = "inline-block";
+    }
+
+    function processFlow() {
+        if (step === 1) {
+            step = 2;
+        } else if (step === 2) {
+            step = 3;
+        } else {
+            // 重要：序列循環邏輯
+            // 將目前的索引全部 +1，然後回到第一步
+            currentIndices = currentIndices.map(i => (i + 1) % 7);
+            step = 1;
+            document.getElementById("cycleInfo").innerText = "序列已推進：下一組循環開始";
+        }
+        
+        document.getElementById("answerArea").style.display = "none";
+        document.getElementById("showBtn").style.display = "inline-block";
+        document.getElementById("nextBtn").style.display = "none";
+        updateUI();
+    }
+
+    init();
+</script>
+
+</body>
+</html>
