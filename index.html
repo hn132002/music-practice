@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>樂理強化訓練台 - 官方預設版</title>
+    <title>橙色的樂理強化訓練器</title>
     <style>
         body { font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: #f0f4f8; }
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; max-width: 500px; width: 100%; position: relative; }
@@ -13,7 +13,6 @@
         .setting-group { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
         .group-title { font-weight: 800; color: #3498db; margin-bottom: 8px; display: block; font-size: 1.1em; }
         .setting-item { margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; }
-        .setting-item label { font-weight: 500; color: #333; }
         
         .timer-bar-container { width: 100%; height: 6px; background: #eee; margin: 10px 0; border-radius: 3px; overflow: hidden; display: none; }
         #timerBar { height: 100%; background: #e74c3c; width: 100%; transition: width linear; }
@@ -21,7 +20,8 @@
 
         .notes-display { font-size: 2.2em; font-weight: bold; margin: 10px 0; padding: 15px; background: #f9f9f9; border: 2px dashed #ddd; border-radius: 12px; cursor: pointer; }
         .input-container { display: flex; justify-content: center; gap: 8px; margin: 10px 0; }
-        .input-slot { width: 60px; height: 50px; border-bottom: 3px solid #bdc3c7; font-size: 1.2em; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        .input-slot { width: 60px; height: 50px; border-bottom: 3px solid #bdc3c7; font-size: 1.2em; font-weight: bold; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        
         .slot-correct { color: #27ae60 !important; border-bottom-color: #27ae60 !important; }
         .slot-wrong { color: #e74c3c !important; border-bottom-color: #e74c3c !important; }
         .slot-default { color: #3498db; border-bottom-color: #3498db; }
@@ -46,73 +46,33 @@
         <div id="settingsPanel">
             <div class="setting-group">
                 <span class="group-title">音程設定</span>
-                <div class="setting-item">
-                    <label>跳進格數</label>
-                    <input type="number" id="jumpVal" value="1" min="1" max="6" style="width: 40px;">
-                </div>
-                <div class="setting-item">
-                    <label>跳進模式</label>
-                    <select id="jumpMode">
-                        <option value="fixed" selected>固定</option>
-                        <option value="random">隨機</option>
-                    </select>
-                </div>
+                <div class="setting-item"><label>跳進格數</label><input type="number" id="jumpVal" value="1" min="1" max="6" style="width: 40px;"></div>
+                <div class="setting-item"><label>跳進模式</label><select id="jumpMode"><option value="fixed" selected>固定</option><option value="random">隨機</option></select></div>
             </div>
 
             <div class="setting-group">
                 <span class="group-title">計時訓練</span>
-                <div class="setting-item">
-                    <label>模式選擇</label>
-                    <select id="timerMode" onchange="toggleSprintInput()">
-                        <option value="off" selected>關閉</option>
-                        <option value="always">每題計時</option>
-                        <option value="sprint">隨機衝刺</option>
-                    </select>
-                </div>
-                <div class="setting-item" id="sprintInputGroup" style="display:none;">
-                    <label>衝刺頻率 (N 題一次)</label>
-                    <input type="number" id="sprintN" value="3" min="1" style="width: 40px;">
-                </div>
-                <div class="setting-item">
-                    <label>倒數秒數</label>
-                    <input type="number" id="timerSec" value="30" min="2" style="width: 40px;">
-                </div>
+                <div class="setting-item"><label>模式選擇</label><select id="timerMode" onchange="toggleSprintInput()"><option value="off" selected>關閉</option><option value="always">每題計時</option><option value="sprint">隨機衝刺</option></select></div>
+                <div class="setting-item" id="sprintInputGroup" style="display:none;"><label>衝刺頻率 (N 題一次)</label><input type="number" id="sprintN" value="3" min="1" style="width: 40px;"></div>
+                <div class="setting-item"><label>倒數秒數</label><input type="number" id="timerSec" value="30" min="2" style="width: 40px;"></div>
             </div>
 
             <div class="setting-group">
                 <span class="group-title">升降音設定</span>
-                <div class="setting-item">
-                    <label>啟用 ♯ (升音) / ♭ (降音)</label>
-                    <div>
-                        <input type="checkbox" id="sharpOn"> ♯ 
-                        <input type="checkbox" id="flatOn"> ♭
-                    </div>
-                </div>
-                <div class="setting-item">
-                    <label>升降出現數量</label>
-                    <input type="number" id="accCount" value="0" min="0" max="4" style="width: 40px;">
-                </div>
-                <div class="setting-item">
-                    <label>異名同音 (♯Mi/♭Do...)</label>
-                    <select id="advMode"><option value="off" selected>OFF (基礎)</option><option value="on">ON (進階)</option></select>
-                </div>
+                <div class="setting-item"><label>啟用 ♯ (升) / ♭ (降)</label><div><input type="checkbox" id="sharpOn"> ♯ <input type="checkbox" id="flatOn"> ♭</div></div>
+                <div class="setting-item"><label>升降出現數量</label><input type="number" id="accCount" value="0" min="0" max="4" style="width: 40px;"></div>
+                <div class="setting-item"><label>異名同音</label><select id="advMode"><option value="off" selected>OFF (基礎)</option><option value="on">ON (進階)</option></select></div>
             </div>
 
             <div class="setting-group">
                 <span class="group-title">介面設定</span>
-                <div class="setting-item">
-                    <label>鍵盤排序</label>
-                    <select id="kbOrder" style="width: 100px;">
-                        <option value="sequential">順序</option>
-                        <option value="random" selected>隨機</option>
-                    </select>
-                </div>
+                <div class="setting-item"><label>鍵盤排序</label><select id="kbOrder" style="width: 100px;"><option value="sequential">順序</option><option value="random" selected>隨機</option></select></div>
             </div>
 
             <button onclick="applySettingsAndReset()" style="width:100%; padding:12px; background:#2ecc71; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">完成設定並重新開始</button>
         </div>
 
-        <div id="stepLabel" style="color:#3498db; font-weight:bold; font-size:1.1em;">音樂強化訓練</div>
+        <div id="stepLabel" style="color:#3498db; font-weight:bold; font-size:1.1em;">橙色的樂理強化訓練器</div>
         <div id="instruction" style="font-size: 1em; color: #555; margin: 5px 0;">點擊按鈕開始</div>
         
         <div id="sprintAlert">⚡ 衝刺挑戰！</div>
@@ -120,7 +80,7 @@
 
         <div id="questionArea" class="notes-display" onclick="handleReplay('Q')">準備就緒</div>
         <div class="input-container"><div class="input-slot" id="slot0"></div><div class="input-slot" id="slot1"></div><div class="input-slot" id="slot2"></div><div class="input-slot" id="slot3"></div></div>
-        <div id="answerArea" class="ans-text" onclick="handleReplay('A')">正確答案</div>
+        <div id="answerArea" class="ans-text" onclick="handleReplay('A')"></div>
         <div id="keyboard" class="keyboard" style="display: none;"></div>
         <button id="mainBtn" onclick="handleClick()">開始練習</button>
     </div>
@@ -137,8 +97,8 @@
     
     function isForbidden(noteIdx, acc) {
         if (document.getElementById("advMode").value === "on") return false;
-        if (acc === 1 && (noteIdx === 2 || noteIdx === 6)) return true; // #Mi, #Si
-        if (acc === 2 && (noteIdx === 0 || noteIdx === 3)) return true; // bDo, bFa
+        if (acc === 1 && (noteIdx === 2 || noteIdx === 6)) return true;
+        if (acc === 2 && (noteIdx === 0 || noteIdx === 3)) return true;
         return false;
     }
 
@@ -147,24 +107,28 @@
         const sOn = document.getElementById("sharpOn").checked, fOn = document.getElementById("flatOn").checked;
         let newAccs = [0, 0, 0, 0];
         if (count === 0 || (!sOn && !fOn)) return newAccs;
-        let positions = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
+        let pos = [0, 1, 2, 3].sort(() => Math.random() - 0.5);
         let assigned = 0;
-        for (let pos of positions) {
+        for (let p of pos) {
             if (assigned >= count) break;
-            let possible = [];
-            if (sOn && !isForbidden(notes[pos], 1)) possible.push(1);
-            if (fOn && !isForbidden(notes[pos], 2)) possible.push(2);
-            if (possible.length > 0) {
-                newAccs[pos] = possible[Math.floor(Math.random() * possible.length)];
-                assigned++;
-            }
+            let opt = [];
+            if (sOn && !isForbidden(notes[p], 1)) opt.push(1);
+            if (fOn && !isForbidden(notes[p], 2)) opt.push(2);
+            if (opt.length > 0) { newAccs[p] = opt[Math.floor(Math.random() * opt.length)]; assigned++; }
         }
         return newAccs;
     }
 
-    function applySettingsAndReset() { toggleSettings(); notes = []; step = 1; questionCounter = 0; isAnsMode = false; userInputs = []; clearInterval(timerInt); document.getElementById("timerBarCont").style.display = "none"; document.getElementById("sprintAlert").style.display = "none"; document.getElementById("answerArea").style.visibility = "hidden"; handleClick(); }
+    function applySettingsAndReset() { 
+        toggleSettings(); notes = []; step = 1; questionCounter = 0; isAnsMode = false; userInputs = []; 
+        clearInterval(timerInt);
+        document.getElementById("answerArea").style.visibility = "hidden";
+        document.getElementById("timerBarCont").style.display = "none";
+        document.getElementById("sprintAlert").style.display = "none";
+        handleClick(); 
+    }
 
-    function play(offset, tempAccs) {
+    function play(offset, tAccs) {
         try {
             if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
             if (ctx.state === 'suspended') ctx.resume();
@@ -173,7 +137,7 @@
                 const osc = ctx.createOscillator(), gain = ctx.createGain();
                 osc.type = 'triangle';
                 let freq = freqs[(idx + offset) % 7];
-                if (tempAccs[i] === 1) freq *= 1.0595; if (tempAccs[i] === 2) freq /= 1.0595;
+                if (tAccs[i] === 1) freq *= 1.0595; if (tAccs[i] === 2) freq /= 1.0595;
                 osc.frequency.setValueAtTime(freq, now + (i * 0.4));
                 gain.gain.setValueAtTime(0.1, now + (i * 0.4));
                 gain.gain.exponentialRampToValueAtTime(0.001, now + (i * 0.4) + 0.5);
@@ -219,39 +183,19 @@
         const c = document.createElement("div"); c.className = "key control"; c.innerText = "Clear"; c.onclick = () => { if(!isAnsMode) { userInputs = []; updateSlots(); }}; kb.appendChild(c);
     }
 
-    function updateSlots() { for (let i = 0; i < 4; i++) { const s = document.getElementById("slot" + i); s.innerText = userInputs[i] || ""; s.className = "input-slot" + (userInputs[i] ? " slot-default" : ""); } }
+    function updateSlots() { 
+        for (let i = 0; i < 4; i++) { 
+            const s = document.getElementById("slot" + i); 
+            s.innerText = userInputs[i] || ""; 
+            if (!isAnsMode) s.className = "input-slot" + (userInputs[i] ? " slot-default" : ""); 
+        } 
+    }
 
     function renderQuestion() {
-        const q = document.getElementById("questionArea"), inst = document.getElementById("instruction"), btn = document.getElementById("mainBtn"), lab = document.getElementById("stepLabel");
-        questionCounter++; isAnsMode = false; btn.innerText = "送出答案"; btn.className = "btn-show"; lab.innerText = "Step " + step; userInputs = []; updateSlots(); renderKeyboard(); startTimer();
+        const q = document.getElementById("questionArea"), inst = document.getElementById("instruction"), btn = document.getElementById("mainBtn"), lab = document.getElementById("stepLabel"), a = document.getElementById("answerArea");
+        questionCounter++; isAnsMode = false; btn.innerText = "送出答案"; btn.className = "btn-show"; lab.innerText = "Step " + step; userInputs = []; a.innerText = ""; a.style.visibility = "hidden"; 
+        for (let i = 0; i < 4; i++) { const s = document.getElementById("slot" + i); s.innerText = ""; s.className = "input-slot"; }
+        renderKeyboard(); startTimer();
         const jump = getJump();
-        function getNoteStr(idx, type, acc) { return ((acc === 1) ? "♯" : (acc === 2 ? "♭" : "")) + (type === 'sol' ? solArr[idx % 7] : namArr[idx % 7]); }
-        if (step === 1) { inst.innerText = "唱名 ➔ 音名"; q.innerText = notes.map((n, i) => getNoteStr(n, 'sol', accs[i])).join(" "); q.classList.add("clickable"); }
-        else if (step === 2) { inst.innerText = `音名位移 (+${jump})`; q.innerText = notes.map((n, i) => getNoteStr(n, 'nam', accs[i])).join(" "); q.classList.remove("clickable"); }
-        else if (step === 3) { inst.innerText = "音名 ➔ 唱名"; q.innerText = notes.map((n, i) => getNoteStr(n + jump, 'nam', accs[i])).join(" "); q.classList.remove("clickable"); }
-        else if (step === 4) { inst.innerText = `唱名位移 (+${jump})`; q.innerText = notes.map((n, i) => getNoteStr(n + jump, 'sol', accs[i])).join(" "); q.classList.add("clickable"); }
-        else if (step === 5) { inst.innerText = "唱名 ➔ 音名"; q.innerText = notes.map((n, i) => getNoteStr(n + jump * 2, 'sol', accs[i])).join(" "); q.classList.add("clickable"); }
-    }
-
-    function handleClick() {
-        clearInterval(timerInt); const a = document.getElementById("answerArea"), btn = document.getElementById("mainBtn");
-        if (notes.length === 0) { let p = [0,1,2,3,4,5,6]; while(notes.length < 4) notes.push(p.splice(Math.floor(Math.random()*p.length), 1)[0]); accs = generateAccidentals(); renderQuestion(); play(0, accs); return; }
-        const jump = getJump();
-        if (!isAnsMode) {
-            isAnsMode = true; btn.innerText = "下一階段"; btn.className = "btn-next";
-            let corr = [];
-            if (step === 1) corr = notes.map((n, i) => ((accs[i]===1?"♯":accs[i]===2?"♭":"")+namArr[n%7]));
-            else if (step === 2) corr = notes.map((n, i) => ((accs[i]===1?"♯":accs[i]===2?"♭":"")+namArr[(n+jump)%7]));
-            else if (step === 3) corr = notes.map((n, i) => ((accs[i]===1?"♯":accs[i]===2?"♭":"")+solArr[(n+jump)%7]));
-            else if (step === 4) corr = notes.map((n, i) => ((accs[i]===1?"♯":accs[i]===2?"♭":"")+solArr[(n+jump*2)%7]));
-            else if (step === 5) corr = notes.map((n, i) => ((accs[i]===1?"♯":accs[i]===2?"♭":"")+namArr[(n+jump*2)%7]));
-            for (let i = 0; i < 4; i++) { const s = document.getElementById("slot" + i); if (userInputs[i] === corr[i]) s.className = "input-slot slot-correct"; else { if (!userInputs[i]) s.innerText = "X"; s.className = "input-slot slot-wrong"; } }
-            a.innerText = "正解：" + corr.join(" "); a.style.visibility = "visible"; handleReplay('A');
-        } else {
-            if (step < 5) step++; else { notes = notes.map(n => (n + jump * 2) % 7); accs = generateAccidentals(); step = 2; }
-            renderQuestion(); if (step === 1) play(0, accs);
-        }
-    }
-</script>
-</body>
-</html>
+        const getNoteStr = (idx, type, acc) => ((acc === 1) ? "♯" : (acc === 2 ? "♭" : "")) + (type === 'sol' ? solArr[idx % 7] : namArr[idx % 7]);
+        if (step === 1) { inst.innerText = "唱名 ➔ 音名"; q.innerText = notes.map((n
