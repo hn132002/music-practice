@@ -163,8 +163,8 @@
             k.onclick = () => { if(!isAnsMode && userInputs.length < notes.length) { userInputs.push(kObj.v); updateSlots(); }};
             kb.appendChild(k);
         });
-        const b = document.createElement("div"); b.className = "key control"; b.innerText = "⌫"; b.onclick = () => { if(!isAnsMode) { userInputs.pop(); updateSlots(); }}; kb.appendChild(b);
-        const c = document.createElement("div"); c.className = "key control"; b.innerText = "🗑️"; c.onclick = () => { if(!isAnsMode) { userInputs = []; updateSlots(); }}; kb.appendChild(c);
+        const b = document.createElement("div"); b.className = "key control"; b.innerText = "Back"; b.onclick = () => { if(!isAnsMode) { userInputs.pop(); updateSlots(); }}; kb.appendChild(b);
+        const c = document.createElement("div"); c.className = "key control"; c.innerText = "Clear"; c.onclick = () => { if(!isAnsMode) { userInputs = []; updateSlots(); }}; kb.appendChild(c);
         kb.style.display = "grid";
     }
 
