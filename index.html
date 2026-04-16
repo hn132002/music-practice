@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>橙色的樂理強化 v3.5.10</title>
+    <title>橙色的樂理強化 v3.5.11</title>
     <style>
         :root { --primary: #3498db; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; }
         body { font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: var(--bg); margin: 0; }
@@ -54,13 +54,13 @@
         </div>
 
         <h1 class="app-title">橙色的樂理強化</h1>
-        <div class="version-tag">Version 3.5.10</div>
+        <div class="version-tag">Version 3.5.11</div>
         <div id="sessionTimer" class="session-timer">Practice Time: 00:00</div>
 
         <div id="pianoPanel" class="info-panel">
             <span class="group-title">📚 樂理核心定義</span>
-            <div class="concept-card"><b>1. 固定唱名</b>：C=Do, D=Re, E=Mi, F=Fa, G=So, A=La, B=Si。不隨調性改變。</div>
-            <div class="concept-card" style="border-left-color: var(--success);"><b>2. 音級位移</b>：在自然音階 1-7 中循環移動。+1 代表移動到下一個音級（二度音程）。</div>
+            <div class="concept-card"><b>1. 固定唱名</b>：C=Do, D=Re, E=Mi, F=Fa, G=So, A=La, B=Si。</div>
+            <div class="concept-card" style="border-left-color: var(--success);"><b>2. 音級位移</b>：在自然音階 1-7 中循環移動。+1 代表移動到下一個音級。</div>
             <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 累積邏輯</b>：綜合模式中位移會累積。Step 5 最終位移為原始音 +2。</div>
             <span class="group-title">快速映射對照</span>
             <div id="refList"></div>
@@ -77,13 +77,12 @@
                         <option value="comprehensive">綜合 (連鎖邏輯)</option>
                     </select>
                 </div>
-                <div class="setting-item"><label>音符數量</label><input type="number" id="noteCount" value="4" min="1" max="8" style="width:45px"></div>
+                <div class="setting-item"><label>音符數量</label><input type="number" id="noteCount" value="4" min="1" max="14" style="width:45px"></div>
                 <div class="setting-item">
                     <label>基準音域</label>
                     <select id="baseOctave"><option value="-1">低八度</option><option value="0" selected>標準 (C4)</option><option value="1">高八度</option></select>
                 </div>
             </div>
-            
             <div id="jumpSettings" class="setting-group" style="display:none;">
                 <span class="group-title">運算參數</span>
                 <div class="setting-item"><label>位移格數</label><input type="number" id="jumpVal" value="1" min="1" max="6" style="width:45px"></div>
@@ -92,7 +91,6 @@
                     <select id="jumpMode"><option value="fixed" selected>固定</option><option value="random">隨機</option></select>
                 </div>
             </div>
-
             <div class="setting-group">
                 <span class="group-title">計時與強度</span>
                 <div class="setting-item">
@@ -127,12 +125,11 @@
             <details class="changelog">
                 <summary>📜 更新日誌與工作紀錄</summary>
                 <ul>
-                    <li><strong>v3.5.10</strong>: 最終體檢：確保計時器自動啟動、補完工作日誌、維持手動發聲。</li>
-                    <li><strong>v3.5.9</strong>: 視覺優化：統一 "So" 命名，修正位移邏輯顯示。</li>
+                    <li><strong>v3.5.11</strong>: 修正音符生成邏輯：解決音符數量超過 7 個時產生的底線 Bug。</li>
+                    <li><strong>v3.5.10</strong>: 最終體檢：確保計時器自動啟動、補完更新日誌。</li>
                     <li><strong>v3.5.8</strong>: 交互優化：檢查答案不再自動發聲，改為點擊題目或正解後發聲。</li>
                     <li><strong>v3.5.6</strong>: 計時修正：新增 Practice Time 總練習計時器。</li>
-                    <li><strong>v3.5.2</strong>: 邏輯認證版。整合概念定義面板。</li>
-                    <li><strong>v3.5.0</strong>: 功能解耦：新增「純音程位移」運算模式。</li>
+                    <li><strong>v3.5.0</strong>: 功能解耦：新增「純音程位移」模式。</li>
                 </ul>
             </details>
         </footer>
@@ -214,8 +211,13 @@
         state.stepIdx = 0; state.questionCounter++; state.isAnsMode = false; const mode = document.getElementById("trainMode").value;
         state.currentJump = (mode === 'mapping') ? 0 : parseInt(document.getElementById("jumpVal").value);
         if (document.getElementById("jumpMode").value === 'random' && mode !== 'mapping') state.currentJump = Math.floor(Math.random()*5)+1;
-        const count = parseInt(document.getElementById("noteCount").value) || 4; state.notes = []; let pool = [0,1,2,3,4,5,6];
-        for(let i=0; i<count; i++) state.notes.push(pool.splice(Math.floor(Math.random()*pool.length), 1)[0]);
+        const count = parseInt(document.getElementById("noteCount").value) || 4; 
+        state.notes = []; 
+        let pool = [0,1,2,3,4,5,6];
+        for(let i=0; i<count; i++) {
+            if (pool.length === 0) pool = [0,1,2,3,4,5,6];
+            state.notes.push(pool.splice(Math.floor(Math.random()*pool.length), 1)[0]);
+        }
         renderStep(); playNotes(getStepPitches());
     }
     function renderStep() {
