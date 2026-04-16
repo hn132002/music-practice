@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>橙色的樂理強化訓練器 v3.2.1</title>
+    <title>橙色的樂理強化訓練器 v3.2.2</title>
     <style>
         body { font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: #f0f4f8; }
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; max-width: 550px; width: 100%; position: relative; }
@@ -16,22 +16,21 @@
             top: 15px;
             right: 15px;
             display: flex;
-            gap: 15px; /* 🏠與⚙️之間的間距 */
+            gap: 15px;
             align-items: center;
             z-index: 10;
         }
 
-        /* 導航按鈕通用樣式 */
         .top-nav-item {
             cursor: pointer;
             font-size: 1.2em;
-            color: #333; /* 預設顏色與題目一致 */
-            text-decoration: none; /* 移除超連結下劃線 */
-            transition: opacity 0.2s; /* 滑過時的漸變效果 */
+            color: #333;
+            text-decoration: none;
+            transition: opacity 0.2s;
         }
 
         .top-nav-item:hover {
-            opacity: 0.8; /* 滑過時降低不透明度，增加按鈕感 */
+            opacity: 0.8;
         }
         
         #settingsPanel { background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 20px; text-align: left; display: none; font-size: 0.85em; border: 1px solid #ddd; }
@@ -57,7 +56,7 @@
         .keyboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 15px; }
         .key { padding: 15px 2px; background: #fff; border-radius: 6px; font-weight: bold; cursor: pointer; border: 1px solid #dcdde1; font-size: 1.1em; box-shadow: 0 2px 0 #eee; }
         .key:active { background: #3498db; color: white; transform: translateY(2px); box-shadow: none; }
-        .key.control { background: #95a5a6; color: white; border: none; grid-column: span 2; box-shadow: 0 2px 0 #7f8c8d; font-size: 1.3em; }
+        .key.control { background: #95a5a6; color: white; border: none; grid-column: span 2; box-shadow: 0 2px 0 #7f8c8d; }
         
         button#mainBtn { padding: 15px; font-size: 1.2em; cursor: pointer; border: none; border-radius: 12px; font-weight: bold; width: 100%; color: white; background: #2ecc71; margin-top: 15px; box-shadow: 0 4px 0 #27ae60; transition: 0.1s; }
         button#mainBtn:active { transform: translateY(3px); box-shadow: none; }
@@ -73,7 +72,7 @@
         </div>
 
         <h1 class="app-title">橙色的樂理強化訓練器</h1>
-        <div class="version-tag">Version 3.2.1</div>
+        <div class="version-tag">Version 3.2.2 (極限 8 音導航版)</div>
 
         <div id="settingsPanel">
             <div class="setting-group">
@@ -121,7 +120,13 @@
 
     function toggleSettings() { const p = document.getElementById("settingsPanel"); p.style.display = (p.style.display === "block") ? "none" : "block"; }
     function toggleSprintInput() { document.getElementById("sprintInputGroup").style.display = (document.getElementById("timerMode").value === 'sprint') ? "flex" : "none"; }
-    function applySettingsAndReset() { toggleSettings(); notes = []; step = 1; questionCounter = 0; isAnsMode = false; userInputs = []; clearInterval(timerInt); document.getElementById("answerArea").style.visibility = "hidden"; document.getElementById("timerBarCont").style.display = "none"; document.getElementById("slotContainer").innerHTML = ""; handleClick(); }
+    
+    function applySettingsAndReset() { 
+        toggleSettings(); notes = []; step = 1; questionCounter = 0; isAnsMode = false; userInputs = []; 
+        clearInterval(timerInt); document.getElementById("answerArea").style.visibility = "hidden"; document.getElementById("timerBarCont").style.display = "none";
+        document.getElementById("slotContainer").innerHTML = "";
+        handleClick(); 
+    }
 
     function play(off) {
         try {
@@ -168,14 +173,24 @@
         kb.style.display = "grid";
     }
 
-    function updateSlots() { for (let i = 0; i < notes.length; i++) { const s = document.getElementById("slot" + i); if(s) { s.innerText = userInputs[i] || ""; if (!isAnsMode) s.className = "input-slot" + (userInputs[i] ? " slot-default" : ""); } } }
+    function updateSlots() { 
+        for (let i = 0; i < notes.length; i++) { 
+            const s = document.getElementById("slot" + i); 
+            if(s) {
+                s.innerText = userInputs[i] || ""; 
+                if (!isAnsMode) s.className = "input-slot" + (userInputs[i] ? " slot-default" : ""); 
+            }
+        } 
+    }
 
     function renderQuestion() {
-        const q = document.getElementById("questionArea"), inst = document.getElementById("instruction"), btn = document.getElementById("mainBtn"), a = document.getElementById("answerArea"), cont = document.getElementById("slotContainer");
+        const q = document.getElementById("questionArea"), inst = document.getElementById("instruction"), btn = document.getElementById("mainBtn"), a = document.getElementById("answerArea");
+        const cont = document.getElementById("slotContainer");
         questionCounter++; isAnsMode = false; btn.innerText = "送出答案"; btn.className = "btn-show"; userInputs = []; a.innerText = ""; a.style.visibility = "hidden";
         cont.innerHTML = "";
         for (let i = 0; i < notes.length; i++) {
-            const s = document.createElement("div"); s.className = "input-slot"; s.id = "slot" + i;
+            const s = document.createElement("div");
+            s.className = "input-slot"; s.id = "slot" + i;
             cont.appendChild(s);
         }
         renderKeyboard(); startTimer();
@@ -186,33 +201,49 @@
         else if (step === 5) { inst.innerText = "唱名 ➔ 音名"; q.innerText = notes.map(n => solArr[(n + currentJump * 2) % 7]).join(" "); }
     }
 
-    function generateNewNotes() {
-        const count = parseInt(document.getElementById("noteCount").value) || 4;
-        let pool = [0,1,2,3,4,5,6], newNotes = [];
-        if (count <= 7) {
-            while(newNotes.length < count) newNotes.push(pool.splice(Math.floor(Math.random()*pool.length), 1)[0]);
-        } else {
-            newNotes = [0,1,2,3,4,5,6]; newNotes.push(Math.floor(Math.random()*7)); newNotes.sort(() => Math.random()-0.5);
-        }
-        return newNotes;
-    }
-
     function handleClick() {
-        clearInterval(timerInt); const a = document.getElementById("answerArea"), btn = document.getElementById("mainBtn");
-        if (notes.length === 0) { notes = generateNewNotes(); currentJump = getJump(); renderQuestion(); play(0); return; }
+        clearInterval(timerInt); 
+        const bar = document.getElementById("timerBar"); 
+        if (bar) { bar.style.transition = 'none'; bar.style.width = window.getComputedStyle(bar).width; }
+        const a = document.getElementById("answerArea"), btn = document.getElementById("mainBtn");
+
+        if (notes.length === 0) { 
+            const count = parseInt(document.getElementById("noteCount").value) || 4;
+            let pool = [0,1,2,3,4,5,6];
+            notes = [];
+            if (count <= 7) {
+                while(notes.length < count) {
+                    notes.push(pool.splice(Math.floor(Math.random()*pool.length), 1)[0]);
+                }
+            } else {
+                notes = [0,1,2,3,4,5,6]; 
+                const duplicate = Math.floor(Math.random() * 7);
+                notes.push(duplicate);
+                notes.sort(() => Math.random() - 0.5);
+            }
+            currentJump = getJump(); renderQuestion(); play(0); return; 
+        }
+
         if (!isAnsMode) {
-            isAnsMode = true; btn.innerText = "送出答案"; btn.className = "btn-next"; corr = [];
-            let corr = []; corr = corr; corr = corr;
+            isAnsMode = true; btn.innerText = "下一步驟"; btn.className = "btn-next";
+            let corr = [];
             if (step === 1) corr = notes.map(n => namArr[n]);
             else if (step === 2) corr = notes.map(n => namArr[(n + currentJump) % 7]);
             else if (step === 3) corr = notes.map(n => solArr[(n + currentJump) % 7]);
             else if (step === 4) corr = notes.map(n => solArr[(n + currentJump * 2) % 7]);
             else if (step === 5) corr = notes.map(n => namArr[(n + currentJump * 2) % 7]);
-            for (let i = 0; i < notes.length; i++) { const s = document.getElementById("slot" + i); if (userInputs[i] === corr[i]) s.className = "input-slot slot-correct"; else { if (!userInputs[i]) s.innerText = "X"; s.className = "input-slot slot-wrong"; } }
-            a.innerText = "正解：" + corr.join(" "); a.style.visibility = "visible"; if (step === 3 || step === 4) play(currentJump * 2);
+            
+            for (let i = 0; i < notes.length; i++) { 
+                const s = document.getElementById("slot" + i); 
+                if (userInputs[i] === corr[i]) s.className = "input-slot slot-correct"; 
+                else { if (!userInputs[i]) s.innerText = "X"; s.className = "input-slot slot-wrong"; } 
+            }
+            a.innerText = "正解：" + corr.join(" "); a.style.visibility = "visible";
+            if (step === 3 || step === 4) play(currentJump * 2);
         } else {
-            if (step < 5) step++; 
-            else { notes = notes.map(n => (n + currentJump * 2) % 7); currentJump = getJump(); step = 2; }
+            if (step < 5) step++; else { 
+                notes = notes.map(n => (n + currentJump * 2) % 7); currentJump = getJump(); step = 2; 
+            }
             renderQuestion(); if (step === 1) play(0);
         }
     }
