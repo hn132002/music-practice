@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>橙色的樂理強化 v3.5.8</title>
+    <title>橙色的樂理強化 v3.5.9</title>
     <style>
         :root { --primary: #3498db; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; }
         body { font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: var(--bg); margin: 0; }
@@ -39,8 +39,6 @@
         .ans-text { margin-top: 8px; font-weight: bold; color: #7f8c8d; height: 1.2em; visibility: hidden; cursor: pointer; }
         .footer { margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px; color: #95a5a6; font-size: 0.8em; text-align: center; }
         .footer a { color: #3498db; text-decoration: none; }
-        .changelog { margin-top: 10px; text-align: left; background: #f9f9f9; padding: 12px; border-radius: 10px; font-size: 0.85em; border: 1px solid #eee; }
-        .changelog summary { cursor: pointer; color: #7f8c8d; font-weight: bold; margin-bottom: 5px; outline: none; }
     </style>
 </head>
 <body>
@@ -54,14 +52,13 @@
         </div>
 
         <h1 class="app-title">橙色的樂理強化</h1>
-        <div class="version-tag">Version 3.5.8 Verified</div>
+        <div class="version-tag">Version 3.5.9 Final</div>
         <div id="sessionTimer" class="session-timer">Practice Time: 00:00</div>
 
         <div id="pianoPanel" class="info-panel">
             <span class="group-title">📚 樂理核心定義</span>
-            <div class="concept-card"><b>1. 固定唱名 (Fixed-Do)</b>：C=Do, D=Re, E=Mi... 映射關係不變。</div>
-            <div class="concept-card" style="border-left-color: var(--success);"><b>2. 音級位移 (Degree Shift)</b>：在自然音階 1-7 中循環移動。+1 代表移動到下一個音級。</div>
-            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 累積邏輯</b>：綜合模式中位移累積。Step 5 為原始音位移 +2。</div>
+            <div class="concept-card"><b>1. 固定唱名</b>：C=Do, D=Re, E=Mi, F=Fa, G=So, A=La, B=Si。</div>
+            <div class="concept-card" style="border-left-color: var(--success);"><b>2. 音級位移</b>：在自然音階 1-7 中循環。+1 為下一個音級。</div>
             <span class="group-title">快速映射對照</span>
             <div id="refList"></div>
         </div>
@@ -83,7 +80,6 @@
                     <select id="baseOctave"><option value="-1">低八度</option><option value="0" selected>標準 (C4)</option><option value="1">高八度</option></select>
                 </div>
             </div>
-            
             <div id="jumpSettings" class="setting-group" style="display:none;">
                 <span class="group-title">運算參數</span>
                 <div class="setting-item"><label>位移格數</label><input type="number" id="jumpVal" value="1" min="1" max="6" style="width:45px"></div>
@@ -92,7 +88,6 @@
                     <select id="jumpMode"><option value="fixed" selected>固定</option><option value="random">隨機</option></select>
                 </div>
             </div>
-
             <div class="setting-group">
                 <span class="group-title">計時與強度</span>
                 <div class="setting-item">
@@ -124,14 +119,6 @@
         <footer class="footer">
             <p>Made with ❤️ by <strong>EtOH58daidai</strong> & <strong>Gemini</strong></p>
             <p>有事情 TG: <a href="https://t.me/EtOH58daidai" target="_blank">EtOH58daidai</a></p>
-            <details class="changelog">
-                <summary>📜 更新日誌</summary>
-                <ul>
-                    <li><strong>v3.5.8</strong>: 修正發聲時機：檢查答案時不再自動播音，改為「點擊正解文字或題目區」才發聲。</li>
-                    <li><strong>v3.5.7</strong>: 補齊發聲邏輯：按下檢查答案時觸發正確音高。</li>
-                    <li><strong>v3.5.6</strong>: 修正練習計時器自動啟動邏輯，還原 TG 與日誌。</li>
-                </ul>
-            </details>
         </footer>
     </div>
 
@@ -160,10 +147,7 @@
         document.getElementById("sessionTimer").innerText = `Practice Time: ${mm}:${ss}`;
     }
     function ensureSessionTimer() {
-        if (!state.sessionStartTime) {
-            state.sessionStartTime = Date.now();
-            state.sessionTimerInt = setInterval(updateSessionTimer, 1000);
-        }
+        if (!state.sessionStartTime) { state.sessionStartTime = Date.now(); state.sessionTimerInt = setInterval(updateSessionTimer, 1000); }
     }
     function getStepPitches() {
         const mode = document.getElementById("trainMode").value, j = state.currentJump, sid = MODE_STEPS[mode][state.stepIdx];
@@ -196,9 +180,6 @@
         if (!state.isAnsMode) {
             state.isAnsMode = true; clearInterval(state.timerInt);
             const bar = document.getElementById("timerBar"); if (bar) { bar.style.transition = 'none'; bar.style.width = window.getComputedStyle(bar).width; }
-            
-            // 重要：取消這裡的 playNotes，達成「檢查答案時不自動發聲」
-            
             const j = state.currentJump, sid = steps[state.stepIdx]; let correct = [];
             if (sid === 10) correct = state.notes.map(n => solArr[n]);
             else if (sid === 11 || sid === 1) correct = state.notes.map(n => namArr[n]);
@@ -261,8 +242,6 @@
         const del = document.createElement("div"); del.className = "key control"; del.innerText = "⌫"; del.onclick = () => { if(!state.isAnsMode) { state.userInputs.pop(); updateSlots(); }}; kb.appendChild(del);
     }
     function updateSlots() { state.notes.forEach((_, i) => { document.getElementById("slot" + i).innerText = state.userInputs[i] || ""; }); }
-    
-    // 修正：handleReplay 增加 force=true，確保在答案模式下點擊一定發聲
     function handleReplay() { playNotes(getStepPitches(), true); }
     function playSingle(i) { playNotes([i], true); }
 </script>
