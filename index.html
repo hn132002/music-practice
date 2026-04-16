@@ -225,7 +225,7 @@
         }
 
         if (!isAnsMode) {
-            isAnsMode = true; btn.innerText = "下一步驟"; btn.className = "btn-next";
+            isAnsMode = true; btn.innerText = "下一題"; btn.className = "btn-next";
             let corr = [];
             if (step === 1) corr = notes.map(n => namArr[n]);
             else if (step === 2) corr = notes.map(n => namArr[(n + currentJump) % 7]);
