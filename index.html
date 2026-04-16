@@ -3,37 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>橙色的樂理強化訓練器 v3.2.2</title>
+    <title>橙色的樂理強化訓練器 v3.2.14</title>
     <style>
         body { font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: #f0f4f8; }
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; max-width: 550px; width: 100%; position: relative; }
         .app-title { color: #3498db; margin: 0; font-size: 1.6em; font-weight: 900; }
         .version-tag { color: #7f8c8d; font-size: 0.7em; margin-bottom: 15px; opacity: 0.6; font-family: monospace; }
         
-        /* 右上角導航容器 */
-        .top-nav-container {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            z-index: 10;
-        }
-
-        .top-nav-item {
-            cursor: pointer;
-            font-size: 1.2em;
-            color: #333;
-            text-decoration: none;
-            transition: opacity 0.2s;
-        }
-
-        .top-nav-item:hover {
-            opacity: 0.8;
-        }
+        .top-nav-container { position: absolute; top: 15px; width: calc(100% - 30px); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        .nav-right { display: flex; gap: 15px; }
+        .top-nav-item { cursor: pointer; font-size: 1.2em; color: #333; text-decoration: none; transition: 0.2s; }
         
-        #settingsPanel { background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 20px; text-align: left; display: none; font-size: 0.85em; border: 1px solid #ddd; }
+        .info-panel { background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 20px; text-align: left; display: none; font-size: 0.85em; border: 1px solid #ddd; }
         .setting-group { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
         .group-title { font-weight: 800; color: #3498db; margin-bottom: 8px; display: block; font-size: 1.1em; }
         .setting-item { margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; }
@@ -41,7 +22,12 @@
         .timer-bar-container { width: 100%; height: 6px; background: #eee; margin: 10px 0; border-radius: 3px; overflow: hidden; display: none; }
         #timerBar { height: 100%; background: #e74c3c; width: 100%; transition: width linear; }
         #sprintAlert { color: #e74c3c; font-weight: bold; font-size: 0.9em; display: none; margin-bottom: 5px; }
-        
+
+        .ref-table { width: 100%; border-collapse: collapse; margin-top: 5px; background: white; }
+        .ref-table th, .ref-table td { border: 1px solid #eee; padding: 10px; text-align: center; }
+        .ref-table th { background: #f0f4f8; color: #7f8c8d; }
+        .ref-table td.clickable-note { color: #3498db; font-weight: bold; cursor: pointer; }
+
         .instruction { font-size: 1.4em; font-weight: 800; color: #2c3e50; margin: 10px 0; min-height: 1.2em; }
         .notes-display { font-size: 1.8em; font-weight: bold; margin: 10px 0; padding: 15px; background: #f9f9f9; border: 2px dashed #ddd; border-radius: 12px; cursor: pointer; color: #333; word-break: break-all; min-height: 1.4em; }
         
@@ -49,56 +35,57 @@
         .input-slot { width: 50px; height: 50px; border-bottom: 3px solid #bdc3c7; font-size: 1em; font-weight: bold; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .slot-correct { color: #27ae60 !important; border-bottom-color: #27ae60 !important; }
         .slot-wrong { color: #e74c3c !important; border-bottom-color: #e74c3c !important; }
-        .slot-default { color: #3498db; border-bottom-color: #3498db; }
         
         .ans-text { font-size: 1.1em; color: #7f8c8d; font-weight: bold; margin-bottom: 10px; min-height: 1.2em; visibility: hidden; }
         
         .keyboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 15px; }
         .key { padding: 15px 2px; background: #fff; border-radius: 6px; font-weight: bold; cursor: pointer; border: 1px solid #dcdde1; font-size: 1.1em; box-shadow: 0 2px 0 #eee; }
         .key:active { background: #3498db; color: white; transform: translateY(2px); box-shadow: none; }
-        .key.control { background: #95a5a6; color: white; border: none; grid-column: span 2; box-shadow: 0 2px 0 #7f8c8d; }
+        .key.control { background: #95a5a6; color: white; border: none; grid-column: span 2; box-shadow: 0 2px 0 #7f8c8d; font-size: 1.3em; }
         
         button#mainBtn { padding: 15px; font-size: 1.2em; cursor: pointer; border: none; border-radius: 12px; font-weight: bold; width: 100%; color: white; background: #2ecc71; margin-top: 15px; box-shadow: 0 4px 0 #27ae60; transition: 0.1s; }
-        button#mainBtn:active { transform: translateY(3px); box-shadow: none; }
-        .btn-show { background: #3498db !important; box-shadow: 0 4px 0 #2980b9 !important; }
-        .btn-next { background: #e67e22 !important; box-shadow: 0 4px 0 #d35400 !important; }
+        
+        .footer { margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px; color: #95a5a6; font-size: 0.8em; }
+        .footer a { color: #3498db; text-decoration: none; }
+        .changelog { margin-top: 10px; text-align: left; background: #f9f9f9; padding: 10px; border-radius: 8px; font-size: 0.85em; }
+        .changelog summary { cursor: pointer; color: #7f8c8d; font-weight: bold; margin-bottom: 5px; outline: none; }
+        .changelog ul { margin: 5px 0; padding-left: 20px; list-style-type: square; }
     </style>
 </head>
 <body>
     <div class="card">
         <div class="top-nav-container">
-            <a href="https://hn132002.github.io/music-practice/" class="top-nav-item" title="回到首頁">🏠</a>
-            <div class="top-nav-item settings-toggle" onclick="toggleSettings()" title="設置">⚙️</div>
+            <div class="top-nav-item" onclick="togglePiano()" title="鋼琴對照">🎹</div>
+            <div class="nav-right">
+                <a href="https://hn132002.github.io/music-practice/" class="top-nav-item" title="回到首頁">🏠</a>
+                <div class="top-nav-item settings-toggle" onclick="toggleSettings()" title="設定">⚙️</div>
+            </div>
         </div>
 
         <h1 class="app-title">橙色的樂理強化訓練器</h1>
-        <div class="version-tag">Version 3.2.2</div>
+        <div class="version-tag">Version 3.2.14</div>
 
-        <div id="settingsPanel">
+        <div id="pianoPanel" class="info-panel">
+            <span class="group-title">音名唱名對照表</span>
+            <table class="ref-table">
+                <thead><tr><th>音名</th><th>唱名 (聽音)</th></tr></thead>
+                <tbody id="refTableBody"></tbody>
+            </table>
+        </div>
+
+        <div id="settingsPanel" class="info-panel">
             <div class="setting-group">
                 <span class="group-title">核心設定</span>
-                <div class="setting-item">
-                    <label>音符數量 (1-8)</label>
-                    <input type="number" id="noteCount" value="4" min="1" max="8" style="width: 40px;">
-                </div>
-                <div class="setting-item">
-                    <label>跳進格數</label>
-                    <input type="number" id="jumpVal" value="1" min="1" max="6" style="width: 40px;">
-                </div>
-                <div class="setting-item">
-                    <label>跳進模式</label>
-                    <select id="jumpMode"><option value="fixed" selected>固定</option><option value="random">隨機</option></select>
-                </div>
+                <div class="setting-item"><label>音符數量</label><input type="number" id="noteCount" value="4" min="1" max="8" style="width: 40px;"></div>
+                <div class="setting-item"><label>跳進格數</label><input type="number" id="jumpVal" value="1" min="1" max="6" style="width: 40px;"></div>
+                <div class="setting-item"><label>跳進模式</label><select id="jumpMode"><option value="fixed" selected>固定</option><option value="random">隨機 (1-5)</option></select></div>
+                <div class="setting-item"><label>基準音域</label><select id="baseOctave"><option value="-1">低八度</option><option value="0" selected>標準 (C4)</option><option value="1">高八度</option></select></div>
             </div>
             <div class="setting-group">
                 <span class="group-title">計時訓練</span>
                 <div class="setting-item"><label>模式選擇</label><select id="timerMode" onchange="toggleSprintInput()"><option value="off" selected>關閉</option><option value="always">每題計時</option><option value="sprint">隨機衝刺</option></select></div>
                 <div id="sprintInputGroup" style="display:none;" class="setting-item"><label>頻率 (N)</label><input type="number" id="sprintN" value="3" min="1" style="width: 40px;"></div>
                 <div class="setting-item"><label>倒數秒數</label><input type="number" id="timerSec" value="30" min="2" style="width: 40px;"></div>
-            </div>
-            <div class="setting-group">
-                <span class="group-title">介面設定</span>
-                <div class="setting-item"><label>鍵盤排序</label><select id="kbOrder" style="width: 80px;"><option value="sequential">順序</option><option value="random" selected>隨機</option></select></div>
             </div>
             <button onclick="applySettingsAndReset()" style="width:100%; padding:10px; background:#2ecc71; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">完成設定並重新開始</button>
         </div>
@@ -112,38 +99,68 @@
         <div id="answerArea" class="ans-text" onclick="handleReplay('A')"></div>
         <div id="keyboard" class="keyboard" style="display: none;"></div>
         <button id="mainBtn" onclick="handleClick()">開始練習</button>
+
+        <footer class="footer">
+            <p>Made with ❤️ by <strong>EtOH58daidai</strong> & <strong>Gemini</strong></p>
+            <p>有事情 TG: <a href="https://t.me/EtOH58daidai" target="_blank">EtOH58daidai</a></p>
+            <details class="changelog">
+                <summary>📜 更新日誌 (Changelog)</summary>
+                <ul>
+                    <li><strong>v3.2.14</strong>: 修正計時器在作答顯示期間不會停止的嚴重 Bug。</li>
+                    <li><strong>v3.2.13</strong>: 署名 EtOH58daidai & Gemini，加入隱藏更新日誌。</li>
+                    <li><strong>v3.2.10</strong>: 實現「絕對音程映射」，修正跨八度斷音問題。</li>
+                    <li><strong>v3.2.3</strong>: 增加🎹鋼琴對照表與單音試聽。</li>
+                    <li><strong>v3.2.1</strong>: 增加🏠回到首頁導航。</li>
+                </ul>
+            </details>
+        </footer>
     </div>
 
 <script>
     const solArr = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si"], namArr = ["C", "D", "E", "F", "G", "A", "B"], freqs = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88];
     let notes = [], userInputs = [], step = 1, isAnsMode = false, ctx = null, timerInt = null, questionCounter = 0, currentJump = 1;
 
-    function toggleSettings() { const p = document.getElementById("settingsPanel"); p.style.display = (p.style.display === "block") ? "none" : "block"; }
-    function toggleSprintInput() { document.getElementById("sprintInputGroup").style.display = (document.getElementById("timerMode").value === 'sprint') ? "flex" : "none"; }
-    
-    function applySettingsAndReset() { 
-        toggleSettings(); notes = []; step = 1; questionCounter = 0; isAnsMode = false; userInputs = []; 
-        clearInterval(timerInt); document.getElementById("answerArea").style.visibility = "hidden"; document.getElementById("timerBarCont").style.display = "none";
-        document.getElementById("slotContainer").innerHTML = "";
-        handleClick(); 
-    }
+    window.onload = function() {
+        const body = document.getElementById("refTableBody");
+        namArr.forEach((name, i) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>${name}</td><td class="clickable-note" onclick="playSingleNote(${i})">${solArr[i]}</td>`;
+            body.appendChild(tr);
+        });
+    };
 
-    function play(off) {
+    function toggleSettings() { document.getElementById("pianoPanel").style.display = "none"; const p = document.getElementById("settingsPanel"); p.style.display = (p.style.display === "block") ? "none" : "block"; }
+    function togglePiano() { document.getElementById("settingsPanel").style.display = "none"; const p = document.getElementById("pianoPanel"); p.style.display = (p.style.display === "block") ? "none" : "block"; }
+    function toggleSprintInput() { document.getElementById("sprintInputGroup").style.display = (document.getElementById("timerMode").value === 'sprint') ? "flex" : "none"; }
+    function getJump() { const v = parseInt(document.getElementById("jumpVal").value); return document.getElementById("jumpMode").value === 'fixed' ? v : Math.floor(Math.random() * 5) + 1; }
+
+    function playSingleNote(idx) {
         try {
             if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
             if (ctx.state === 'suspended') ctx.resume();
-            const now = ctx.currentTime;
-            notes.forEach((idx, i) => {
+            const now = ctx.currentTime, baseOct = parseInt(document.getElementById("baseOctave").value);
+            const osc = ctx.createOscillator(), gain = ctx.createGain();
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(freqs[idx] * Math.pow(2, baseOct), now);
+            gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+            osc.connect(gain); gain.connect(ctx.destination); osc.start(now); osc.stop(now + 0.5);
+        } catch(e) {}
+    }
+
+    function playNotes(targetNotes) {
+        try {
+            if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+            if (ctx.state === 'suspended') ctx.resume();
+            const now = ctx.currentTime, baseOct = parseInt(document.getElementById("baseOctave").value);
+            targetNotes.forEach((idx, i) => {
                 const osc = ctx.createOscillator(), gain = ctx.createGain();
-                osc.type = 'triangle'; osc.frequency.setValueAtTime(freqs[(idx + off) % 7], now + (i * 0.4));
+                osc.type = 'triangle'; 
+                const octaveShift = Math.pow(2, Math.floor(idx / 7) + baseOct);
+                osc.frequency.setValueAtTime(freqs[((idx % 7) + 7) % 7] * octaveShift, now + (i * 0.4));
                 gain.gain.setValueAtTime(0.1, now + (i * 0.4)); gain.gain.exponentialRampToValueAtTime(0.001, now + (i * 0.4) + 0.5);
                 osc.connect(gain); gain.connect(ctx.destination); osc.start(now + (i * 0.4)); osc.stop(now + (i * 0.4) + 0.5);
             });
         } catch(e) {}
     }
-
-    function handleReplay(type) { if (notes.length === 0) return; if (type === 'Q') { if (step === 1) play(0); if (step === 4 || step === 5) play(currentJump * 2); } else if (type === 'A' && isAnsMode) { if (step === 3 || step === 4) play(currentJump * 2); } }
-    function getJump() { const v = parseInt(document.getElementById("jumpVal").value); return document.getElementById("jumpMode").value === 'fixed' ? v : Math.floor(Math.random() * 5) + 1; }
 
     function startTimer() {
         clearInterval(timerInt);
@@ -158,95 +175,91 @@
         timerInt = setInterval(() => { handleClick(); }, sec * 1000);
     }
 
-    function renderKeyboard() {
-        const kb = document.getElementById("keyboard"), ord = document.getElementById("kbOrder").value;
-        kb.innerHTML = ""; const isSol = (step === 3 || step === 4), base = isSol ? solArr : namArr;
-        let ks = base.map(v => ({v: v}));
-        if (ord === "random") ks.sort(() => Math.random() - 0.5);
-        ks.forEach(kObj => {
-            const k = document.createElement("div"); k.className = "key"; k.innerText = kObj.v;
-            k.onclick = () => { if(!isAnsMode && userInputs.length < notes.length) { userInputs.push(kObj.v); updateSlots(); }};
-            kb.appendChild(k);
-        });
-        const b = document.createElement("div"); b.className = "key control"; b.innerText = "Back"; b.onclick = () => { if(!isAnsMode) { userInputs.pop(); updateSlots(); }}; kb.appendChild(b);
-        const c = document.createElement("div"); c.className = "key control"; c.innerText = "Clear"; c.onclick = () => { if(!isAnsMode) { userInputs = []; updateSlots(); }}; kb.appendChild(c);
-        kb.style.display = "grid";
-    }
-
-    function updateSlots() { 
-        for (let i = 0; i < notes.length; i++) { 
-            const s = document.getElementById("slot" + i); 
-            if(s) {
-                s.innerText = userInputs[i] || ""; 
-                if (!isAnsMode) s.className = "input-slot" + (userInputs[i] ? " slot-default" : ""); 
-            }
-        } 
-    }
-
-    function renderQuestion() {
-        const q = document.getElementById("questionArea"), inst = document.getElementById("instruction"), btn = document.getElementById("mainBtn"), a = document.getElementById("answerArea");
-        const cont = document.getElementById("slotContainer");
-        questionCounter++; isAnsMode = false; btn.innerText = "送出答案"; btn.className = "btn-show"; userInputs = []; a.innerText = ""; a.style.visibility = "hidden";
-        cont.innerHTML = "";
-        for (let i = 0; i < notes.length; i++) {
-            const s = document.createElement("div");
-            s.className = "input-slot"; s.id = "slot" + i;
-            cont.appendChild(s);
+    function handleReplay(type) {
+        if (notes.length === 0) return;
+        let pArr = [];
+        if (type === 'Q') {
+            if (step <= 2) pArr = [...notes];
+            else if (step <= 4) pArr = notes.map(n => n + currentJump);
+            else pArr = notes.map(n => n + currentJump * 2);
+        } else {
+            if (step === 1) pArr = [...notes];
+            else if (step <= 3) pArr = notes.map(n => n + currentJump);
+            else pArr = notes.map(n => n + currentJump * 2);
         }
-        renderKeyboard(); startTimer();
-        if (step === 1) { inst.innerText = "唱名 ➔ 音名"; q.innerText = notes.map(n => solArr[n]).join(" "); }
-        else if (step === 2) { inst.innerText = `音名位移 (+${currentJump})`; q.innerText = notes.map(n => namArr[n]).join(" "); }
-        else if (step === 3) { inst.innerText = "音名 ➔ 唱名"; q.innerText = notes.map(n => namArr[(n + currentJump) % 7]).join(" "); }
-        else if (step === 4) { inst.innerText = `唱名位移 (+${currentJump})`; q.innerText = notes.map(n => solArr[(n + currentJump) % 7]).join(" "); }
-        else if (step === 5) { inst.innerText = "唱名 ➔ 音名"; q.innerText = notes.map(n => solArr[(n + currentJump * 2) % 7]).join(" "); }
+        playNotes(pArr);
     }
+
+    function applySettingsAndReset() { document.getElementById("settingsPanel").style.display = "none"; notes = []; step = 1; questionCounter = 0; isAnsMode = false; userInputs = []; clearInterval(timerInt); document.getElementById("answerArea").style.visibility = "hidden"; document.getElementById("timerBarCont").style.display = "none"; document.getElementById("slotContainer").innerHTML = ""; handleClick(); }
 
     function handleClick() {
-        clearInterval(timerInt); 
-        const bar = document.getElementById("timerBar"); 
-        if (bar) { bar.style.transition = 'none'; bar.style.width = window.getComputedStyle(bar).width; }
-        const a = document.getElementById("answerArea"), btn = document.getElementById("mainBtn");
+        // 核心修復：先清除 Interval 並強制停止 CSS 動畫
+        clearInterval(timerInt);
+        const bar = document.getElementById("timerBar");
+        if (bar) {
+            bar.style.transition = 'none'; // 停止動畫
+            bar.style.width = window.getComputedStyle(bar).width; // 鎖定在當前寬度
+        }
 
-        if (notes.length === 0) { 
+        const a = document.getElementById("answerArea"), btn = document.getElementById("mainBtn");
+        if (notes.length === 0) {
             const count = parseInt(document.getElementById("noteCount").value) || 4;
-            let pool = [0,1,2,3,4,5,6];
-            notes = [];
-            if (count <= 7) {
-                while(notes.length < count) {
-                    notes.push(pool.splice(Math.floor(Math.random()*pool.length), 1)[0]);
-                }
-            } else {
-                notes = [0,1,2,3,4,5,6]; 
-                const duplicate = Math.floor(Math.random() * 7);
-                notes.push(duplicate);
-                notes.sort(() => Math.random() - 0.5);
-            }
-            currentJump = getJump(); renderQuestion(); play(0); return; 
+            let p = [0,1,2,3,4,5,6]; notes = [];
+            if (count <= 7) while(notes.length < count) notes.push(p.splice(Math.floor(Math.random()*p.length), 1)[0]);
+            else { notes = [0,1,2,3,4,5,6]; notes.push(Math.floor(Math.random()*7)); notes.sort(() => Math.random()-0.5); }
+            currentJump = getJump(); renderQuestion(); playNotes(notes); return; 
         }
 
         if (!isAnsMode) {
-            isAnsMode = true; btn.innerText = "下一題"; btn.className = "btn-next";
-            let corr = [];
-            if (step === 1) corr = notes.map(n => namArr[n]);
-            else if (step === 2) corr = notes.map(n => namArr[(n + currentJump) % 7]);
-            else if (step === 3) corr = notes.map(n => solArr[(n + currentJump) % 7]);
-            else if (step === 4) corr = notes.map(n => solArr[(n + currentJump * 2) % 7]);
-            else if (step === 5) corr = notes.map(n => namArr[(n + currentJump * 2) % 7]);
-            
-            for (let i = 0; i < notes.length; i++) { 
-                const s = document.getElementById("slot" + i); 
-                if (userInputs[i] === corr[i]) s.className = "input-slot slot-correct"; 
-                else { if (!userInputs[i]) s.innerText = "X"; s.className = "input-slot slot-wrong"; } 
+            isAnsMode = true; btn.innerText = "下一步驟";
+            let corrArr = [], ansNotes = [];
+            if (step === 1) { corrArr = notes.map(n => namArr[n % 7]); ansNotes = [...notes]; }
+            else if (step === 2) { corrArr = notes.map(n => namArr[((n + currentJump) % 7 + 7) % 7]); ansNotes = notes.map(n => n + currentJump); }
+            else if (step === 3) { corrArr = notes.map(n => solArr[((n + currentJump) % 7 + 7) % 7]); ansNotes = notes.map(n => n + currentJump); }
+            else if (step === 4) { corrArr = notes.map(n => solArr[((n + currentJump * 2) % 7 + 7) % 7]); ansNotes = notes.map(n => n + currentJump * 2); }
+            else if (step === 5) { corrArr = notes.map(n => namArr[((n + currentJump * 2) % 7 + 7) % 7]); ansNotes = notes.map(n => n + currentJump * 2); }
+            for (let i = 0; i < notes.length; i++) {
+                const s = document.getElementById("slot" + i);
+                if (userInputs[i] === corrArr[i]) s.className = "input-slot slot-correct";
+                else { if (!userInputs[i]) s.innerText = "X"; s.className = "input-slot slot-wrong"; }
             }
-            a.innerText = "正解：" + corr.join(" "); a.style.visibility = "visible";
-            if (step === 3 || step === 4) play(currentJump * 2);
+            a.innerText = "正解：" + corrArr.join(" "); a.style.visibility = "visible";
+            if (step >= 2) playNotes(ansNotes);
+            // 注意：此時不會調用 startTimer()，計時器會保持暫停。
         } else {
-            if (step < 5) step++; else { 
-                notes = notes.map(n => (n + currentJump * 2) % 7); currentJump = getJump(); step = 2; 
-            }
-            renderQuestion(); if (step === 1) play(0);
+            if (step < 5) step++; else { notes = notes.map(n => n + currentJump * 2); currentJump = getJump(); step = 2; }
+            renderQuestion(); // 這裡會重新調用 startTimer()
+            if (step === 1) playNotes(notes);
         }
     }
+
+    function renderQuestion() {
+        const q = document.getElementById("questionArea"), inst = document.getElementById("instruction"), a = document.getElementById("answerArea"), cont = document.getElementById("slotContainer");
+        questionCounter++; isAnsMode = false; userInputs = []; a.innerText = ""; a.style.visibility = "hidden"; cont.innerHTML = "";
+        for (let i = 0; i < notes.length; i++) { const s = document.createElement("div"); s.className = "input-slot"; s.id = "slot" + i; cont.appendChild(s); }
+        renderKeyboard(); 
+        startTimer(); // 重啟計時
+        if (step === 1) { inst.innerText = "唱名 ➔ 音名"; q.innerText = notes.map(n => solArr[((n % 7) + 7) % 7]).join(" "); }
+        else if (step === 2) { inst.innerText = `音名位移 (+${currentJump})`; q.innerText = notes.map(n => namArr[((n % 7) + 7) % 7]).join(" "); }
+        else if (step === 3) { inst.innerText = "音名 ➔ 唱名"; q.innerText = notes.map(n => namArr[(((n + currentJump) % 7) + 7) % 7]).join(" "); }
+        else if (step === 4) { inst.innerText = `唱名位移 (+${currentJump})`; q.innerText = notes.map(n => solArr[(((n + currentJump) % 7) + 7) % 7]).join(" "); }
+        else if (step === 5) { inst.innerText = "唱名 ➔ 音名"; q.innerText = notes.map(n => solArr[(((n + currentJump * 2) % 7) + 7) % 7]).join(" "); }
+    }
+
+    function renderKeyboard() {
+        const kb = document.getElementById("keyboard"); kb.innerHTML = "";
+        const isSol = (step === 3 || step === 4), base = isSol ? solArr : namArr;
+        base.forEach(v => {
+            const k = document.createElement("div"); k.className = "key"; k.innerText = v;
+            k.onclick = () => { if(!isAnsMode && userInputs.length < notes.length) { userInputs.push(v); updateSlots(); }};
+            kb.appendChild(k);
+        });
+        const b = document.createElement("div"); b.className = "key control"; b.innerText = "⌫"; b.onclick = () => { if(!isAnsMode) { userInputs.pop(); updateSlots(); }}; kb.appendChild(b);
+        const c = document.createElement("div"); c.className = "key control"; c.innerText = "🗑️"; c.onclick = () => { if(!isAnsMode) { userInputs = []; updateSlots(); }}; kb.appendChild(c);
+        kb.style.display = "grid";
+    }
+
+    function updateSlots() { for (let i = 0; i < notes.length; i++) { const s = document.getElementById("slot" + i); if(s) { s.innerText = userInputs[i] || ""; if (!isAnsMode) s.className = "input-slot" + (userInputs[i] ? " slot-default" : ""); } } }
 </script>
 </body>
 </html>
