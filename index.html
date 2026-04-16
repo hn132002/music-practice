@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>橙色的樂理強化 v3.5.9</title>
+    <title>橙色的樂理強化 v3.5.10</title>
     <style>
         :root { --primary: #3498db; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; }
         body { font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: var(--bg); margin: 0; }
@@ -11,7 +11,7 @@
         .top-nav { position: absolute; top: 15px; width: calc(100% - 40px); display: flex; justify-content: space-between; padding: 0 5px; z-index: 10; }
         .nav-item { cursor: pointer; font-size: 1.3em; filter: grayscale(0.3); transition: 0.2s; text-decoration: none; color: #333; }
         .app-title { color: var(--primary); margin: 0; font-size: 1.4em; font-weight: 900; }
-        .session-timer { background: #eef2f7; color: #34495e; padding: 6px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; font-family: 'Courier New', monospace; display: inline-block; margin-top: 8px; margin-bottom: 12px; border: 1px solid #dcdde1; }
+        .session-timer { background: #eef2f7; color: #34495e; padding: 6px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; font-family: 'Courier New', monospace; display: inline-block; margin-top: 8px; margin-bottom: 12px; border: 1px solid #dcdde1; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
         .version-tag { color: #95a5a6; font-size: 0.7em; font-family: monospace; margin-bottom: 5px; }
         .info-panel { background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; display: none; font-size: 0.85em; border: 1px solid #ddd; max-height: 70vh; overflow-y: auto; }
         .setting-group { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
@@ -39,6 +39,8 @@
         .ans-text { margin-top: 8px; font-weight: bold; color: #7f8c8d; height: 1.2em; visibility: hidden; cursor: pointer; }
         .footer { margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px; color: #95a5a6; font-size: 0.8em; text-align: center; }
         .footer a { color: #3498db; text-decoration: none; }
+        .changelog { margin-top: 10px; text-align: left; background: #f9f9f9; padding: 12px; border-radius: 10px; font-size: 0.85em; border: 1px solid #eee; }
+        .changelog summary { cursor: pointer; color: #7f8c8d; font-weight: bold; margin-bottom: 5px; outline: none; }
     </style>
 </head>
 <body>
@@ -52,13 +54,14 @@
         </div>
 
         <h1 class="app-title">橙色的樂理強化</h1>
-        <div class="version-tag">Version 3.5.9 Final</div>
+        <div class="version-tag">Version 3.5.10 Final</div>
         <div id="sessionTimer" class="session-timer">Practice Time: 00:00</div>
 
         <div id="pianoPanel" class="info-panel">
             <span class="group-title">📚 樂理核心定義</span>
-            <div class="concept-card"><b>1. 固定唱名</b>：C=Do, D=Re, E=Mi, F=Fa, G=So, A=La, B=Si。</div>
-            <div class="concept-card" style="border-left-color: var(--success);"><b>2. 音級位移</b>：在自然音階 1-7 中循環。+1 為下一個音級。</div>
+            <div class="concept-card"><b>1. 固定唱名</b>：C=Do, D=Re, E=Mi, F=Fa, G=So, A=La, B=Si。不隨調性改變。</div>
+            <div class="concept-card" style="border-left-color: var(--success);"><b>2. 音級位移</b>：在自然音階 1-7 中循環移動。+1 代表移動到下一個音級（二度音程）。</div>
+            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 累積邏輯</b>：綜合模式中位移會累積。Step 5 最終位移為原始音 +2j。</div>
             <span class="group-title">快速映射對照</span>
             <div id="refList"></div>
         </div>
@@ -80,6 +83,7 @@
                     <select id="baseOctave"><option value="-1">低八度</option><option value="0" selected>標準 (C4)</option><option value="1">高八度</option></select>
                 </div>
             </div>
+            
             <div id="jumpSettings" class="setting-group" style="display:none;">
                 <span class="group-title">運算參數</span>
                 <div class="setting-item"><label>位移格數</label><input type="number" id="jumpVal" value="1" min="1" max="6" style="width:45px"></div>
@@ -88,6 +92,7 @@
                     <select id="jumpMode"><option value="fixed" selected>固定</option><option value="random">隨機</option></select>
                 </div>
             </div>
+
             <div class="setting-group">
                 <span class="group-title">計時與強度</span>
                 <div class="setting-item">
@@ -119,6 +124,17 @@
         <footer class="footer">
             <p>Made with ❤️ by <strong>EtOH58daidai</strong> & <strong>Gemini</strong></p>
             <p>有事情 TG: <a href="https://t.me/EtOH58daidai" target="_blank">EtOH58daidai</a></p>
+            <details class="changelog">
+                <summary>📜 更新日誌與工作紀錄</summary>
+                <ul>
+                    <li><strong>v3.5.10</strong>: 最終體檢：確保計時器自動啟動、補完工作日誌、維持手動發聲。</li>
+                    <li><strong>v3.5.9</strong>: 視覺優化：統一 "So" 命名，修正位移邏輯顯示。</li>
+                    <li><strong>v3.5.8</strong>: 交互優化：檢查答案不再自動發聲，改為點擊題目或正解後發聲。</li>
+                    <li><strong>v3.5.6</strong>: 計時修正：新增 Practice Time 總練習計時器。</li>
+                    <li><strong>v3.5.2</strong>: 邏輯認證版。整合概念定義面板。</li>
+                    <li><strong>v3.5.0</strong>: 功能解耦：新增「純音程位移」運算模式。</li>
+                </ul>
+            </details>
         </footer>
     </div>
 
@@ -188,7 +204,6 @@
             else if (sid === 21) correct = state.notes.map(n => solArr[(n+j)%7]);
             else if (sid === 4) correct = state.notes.map(n => solArr[(n+j*2)%7]);
             else if (sid === 5) correct = state.notes.map(n => namArr[(n+j*2)%7]);
-            
             state.notes.forEach((_, i) => { const s = document.getElementById("slot" + i); if (state.userInputs[i] === correct[i]) s.classList.add("slot-correct"); else { s.classList.add("slot-wrong"); s.innerText = state.userInputs[i] || "X"; const keys = document.querySelectorAll('.key'); keys.forEach(k => { if(k.innerText === correct[i]) { k.classList.add('hint-correct'); setTimeout(()=>k.classList.remove('hint-correct'), 800); }}); }});
             document.getElementById("answerArea").innerText = "正解：" + correct.join(" "); document.getElementById("answerArea").style.visibility = "visible"; document.getElementById("mainBtn").innerText = "下一步驟";
         } else {
