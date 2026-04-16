@@ -3,72 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>橙色的樂理強化訓練器 v3.4.1</title>
+    <title>橙色的樂理強化 v3.5.6</title>
     <style>
-        :root { --primary: #3498db; --success: --2ecc71; --error: #e74c3c; --bg: #f0f4f8; }
-        body { font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: #f0f4f8; margin: 0; }
+        :root { --primary: #3498db; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; }
+        body { font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: var(--bg); margin: 0; }
         .card { background: white; padding: 25px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; max-width: 500px; width: 100%; position: relative; }
         
         .top-nav { position: absolute; top: 15px; width: calc(100% - 40px); display: flex; justify-content: space-between; padding: 0 5px; z-index: 10; }
         .nav-item { cursor: pointer; font-size: 1.3em; filter: grayscale(0.3); transition: 0.2s; text-decoration: none; color: #333; }
-        .app-title { color: #3498db; margin: 0; font-size: 1.4em; font-weight: 900; }
-        .version-tag { color: #95a5a6; font-size: 0.7em; font-family: monospace; margin-bottom: 20px; }
-
+        .app-title { color: var(--primary); margin: 0; font-size: 1.4em; font-weight: 900; }
+        
+        .session-timer { background: #eef2f7; color: #34495e; padding: 6px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; font-family: 'Courier New', monospace; display: inline-block; margin-top: 8px; margin-bottom: 12px; border: 1px solid #dcdde1; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+        
+        .version-tag { color: #95a5a6; font-size: 0.7em; font-family: monospace; margin-bottom: 5px; }
         .info-panel { background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; display: none; font-size: 0.85em; border: 1px solid #ddd; max-height: 70vh; overflow-y: auto; }
         .setting-group { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
-        .group-title { font-weight: 800; color: #3498db; display: block; margin-bottom: 8px; font-size: 1.1em; }
+        .group-title { font-weight: 800; color: var(--primary); display: block; margin-bottom: 8px; font-size: 1.1em; }
         .setting-item { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; }
-
+        
         #refList { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; gap: 4px; overflow-x: auto; }
-        .ref-item { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 42px; background: #fff; padding: 8px 2px; border-radius: 10px; border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .ref-note-name { font-weight: bold; color: #3498db; font-size: 1.1em; }
-        .ref-arrow { color: #bdc3c7; font-size: 0.8em; margin: 2px 0; }
+        .ref-item { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 42px; background: #fff; padding: 8px 2px; border-radius: 10px; border: 1px solid #eee; cursor: pointer; }
+        .ref-note-name { font-weight: bold; color: var(--primary); font-size: 1.1em; }
         .ref-sol-name { font-weight: 800; color: #2c3e50; }
-
+        
+        .concept-card { background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--primary); font-size: 0.95em; line-height: 1.4; }
         .timer-bar-container { width: 100%; height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-bottom: 10px; display: none; }
-        #timerBar { height: 100%; background: #e74c3c; width: 100%; transition: width linear; }
-        #sprintAlert { color: #e74c3c; font-weight: bold; font-size: 0.9em; display: none; margin-bottom: 5px; animation: blink 1s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
+        #timerBar { height: 100%; background: var(--error); width: 100%; transition: width linear; }
+        
         .quiz-container { background: #f9f9f9; border-radius: 16px; padding: 15px; margin: 10px 0; border: 2px solid #eee; }
         .instruction { font-size: 1.1em; font-weight: 800; color: #7f8c8d; margin-bottom: 8px; }
-        .notes-display { font-size: 2.2em; font-weight: bold; color: #2c3e50; margin-bottom: 12px; cursor: pointer; min-height: 1.2em; letter-spacing: 2px; }
-        .input-container { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+        .notes-display { font-size: 2.2em; font-weight: bold; color: #2c3e50; margin-bottom: 12px; cursor: pointer; letter-spacing: 2px; }
+        
+        .input-container { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; min-height: 48px; }
         .input-slot { width: 45px; height: 45px; border-bottom: 3px solid #bdc3c7; font-size: 1.2em; font-weight: bold; display: flex; align-items: center; justify-content: center; }
-        .slot-correct { color: #2ecc71 !important; border-bottom-color: #2ecc71 !important; }
-        .slot-wrong { color: #e74c3c !important; border-bottom-color: #e74c3c !important; }
-
+        .slot-correct { color: var(--success) !important; border-bottom-color: var(--success) !important; }
+        .slot-wrong { color: var(--error) !important; border-bottom-color: var(--error) !important; }
+        
         .keyboard { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 15px; }
-        .key { padding: 15px 0; background: #fff; border-radius: 8px; font-weight: bold; cursor: pointer; border: 1px solid #dcdde1; box-shadow: 0 3px 0 #eee; font-size: 0.9em; }
-        .key:active { transform: translateY(2px); box-shadow: none; background: #f0f0f0; }
-        .key.hint-correct { background: #2ecc71 !important; color: white !important; }
+        .key { padding: 15px 0; background: #fff; border-radius: 8px; font-weight: bold; cursor: pointer; border: 1px solid #dcdde1; box-shadow: 0 3px 0 #eee; font-size: 0.9em; -webkit-tap-highlight-color: transparent; }
+        .key.hint-correct { background: var(--success) !important; color: white !important; }
         .key.control { background: #95a5a6; color: white; grid-column: span 7; margin-top: 4px; padding: 10px 0; font-size: 1.2em; }
-
-        #mainBtn { padding: 16px; font-size: 1.2em; cursor: pointer; border: none; border-radius: 14px; font-weight: bold; width: 100%; color: white; background: #2ecc71; margin-top: 15px; box-shadow: 0 4px 0 #27ae60; outline: none; }
+        
+        #mainBtn { padding: 16px; font-size: 1.2em; cursor: pointer; border: none; border-radius: 14px; font-weight: bold; width: 100%; color: white; background: var(--success); margin-top: 15px; box-shadow: 0 4px 0 #27ae60; outline: none; }
         .ans-text { margin-top: 8px; font-weight: bold; color: #7f8c8d; height: 1.2em; visibility: hidden; }
-
-        .footer { margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px; color: #95a5a6; font-size: 0.8em; text-align: center; width: 100%; }
+        .footer { margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px; color: #95a5a6; font-size: 0.8em; text-align: center; }
         .footer a { color: #3498db; text-decoration: none; }
         .changelog { margin-top: 10px; text-align: left; background: #f9f9f9; padding: 12px; border-radius: 10px; font-size: 0.85em; border: 1px solid #eee; }
         .changelog summary { cursor: pointer; color: #7f8c8d; font-weight: bold; margin-bottom: 5px; outline: none; }
-        .changelog ul { margin: 5px 0; padding-left: 20px; list-style-type: square; }
     </style>
 </head>
 <body>
     <div class="card">
         <div class="top-nav">
-            <div class="nav-item" onclick="togglePanel('pianoPanel')" title="對照表">🎹</div>
+            <div class="nav-item" onclick="togglePanel('pianoPanel')" title="核心概念">🎹</div>
             <div style="display: flex; gap: 15px;">
-                <a href="https://hn132002.github.io/music-practice/" class="nav-item" title="回到首頁">🏠</a>
-                <div class="nav-item" onclick="togglePanel('settingsPanel')" title="設定">⚙️</div>
+                <a href="https://hn132002.github.io/music-practice/" class="nav-item">🏠</a>
+                <div class="nav-item" onclick="togglePanel('settingsPanel')">⚙️</div>
             </div>
         </div>
 
-        <h1 class="app-title">橙色的樂理強化訓練器</h1>
-        <div class="version-tag">Version 3.4.1</div>
+        <h1 class="app-title">橙色的樂理強化</h1>
+        <div class="version-tag">Version 3.5.6 Verified</div>
+        <div id="sessionTimer" class="session-timer">Practice Time: 00:00</div>
 
         <div id="pianoPanel" class="info-panel">
-            <span class="group-title">橫向映射對照表</span>
+            <span class="group-title">📚 樂理核心定義</span>
+            <div class="concept-card"><b>1. 固定唱名 (Fixed-Do)</b>：C=Do, D=Re, E=Mi... 映射關係不變。</div>
+            <div class="concept-card" style="border-left-color: var(--success);"><b>2. 音級位移 (Degree Shift)</b>：在自然音階 1-7 中循環移動。+1 代表移動到下一個音級（二度音程）。</div>
+            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 累積邏輯</b>：綜合模式中位移會累積。Step 5 答案為原始音位移 +2。</div>
+            <span class="group-title">快速映射對照</span>
             <div id="refList"></div>
         </div>
 
@@ -78,57 +81,51 @@
                 <div class="setting-item">
                     <label>模式</label>
                     <select id="trainMode" onchange="updateModeUI()">
-                        <option value="mapping" selected>基礎 (音唱映射)</option>
-                        <option value="calc">進階 (位移運算)</option>
+                        <option value="mapping" selected>基礎 (純音唱映射)</option>
+                        <option value="displacement">運算 (純音程位移)</option>
+                        <option value="comprehensive">綜合 (連鎖邏輯)</option>
                     </select>
                 </div>
                 <div class="setting-item"><label>音符數量</label><input type="number" id="noteCount" value="4" min="1" max="8" style="width:45px"></div>
                 <div class="setting-item">
                     <label>基準音域</label>
-                    <select id="baseOctave">
-                        <option value="-1">低八度</option>
-                        <option value="0" selected>標準 (C4)</option>
-                        <option value="1">高八度</option>
-                    </select>
+                    <select id="baseOctave"><option value="-1">低八度</option><option value="0" selected>標準 (C4)</option><option value="1">高八度</option></select>
                 </div>
             </div>
-
-            <div id="calcSettings" class="setting-group" style="display:none;">
+            
+            <div id="jumpSettings" class="setting-group" style="display:none;">
                 <span class="group-title">運算參數</span>
-                <div class="setting-item"><label>跳進格數</label><input type="number" id="jumpVal" value="1" min="1" max="6" style="width:45px"></div>
+                <div class="setting-item"><label>位移格數</label><input type="number" id="jumpVal" value="1" min="1" max="6" style="width:45px"></div>
                 <div class="setting-item">
-                    <label>跳進模式</label>
-                    <select id="jumpMode"><option value="fixed">固定</option><option value="random">隨機</option></select>
+                    <label>格數模式</label>
+                    <select id="jumpMode"><option value="fixed" selected>固定</option><option value="random">隨機</option></select>
                 </div>
             </div>
 
             <div class="setting-group">
-                <span class="group-title">訓練強度</span>
-                <div class="setting-item"><label>鍵盤亂序</label><input type="checkbox" id="kbRandom" onchange="renderKeyboard()"></div>
+                <span class="group-title">計時與強度</span>
                 <div class="setting-item">
                     <label>計時模式</label>
                     <select id="timerMode" onchange="updateModeUI()">
-                        <option value="off">關閉</option>
+                        <option value="off" selected>關閉</option>
                         <option value="always">每題計時</option>
                         <option value="sprint">隨機衝刺</option>
                     </select>
                 </div>
-                <div id="sprintNGroup" class="setting-item" style="display:none;"><label>頻率 (N)</label><input type="number" id="sprintN" value="3" min="1" style="width:45px"></div>
-                <div class="setting-item"><label>秒數</label><input type="number" id="timerSec" value="15" min="3" style="width:45px"></div>
+                <div id="sprintNGroup" class="setting-item" style="display:none;"><label>衝刺頻率 (N)</label><input type="number" id="sprintN" value="3" min="1" style="width:45px"></div>
+                <div class="setting-item"><label>倒數秒數</label><input type="number" id="timerSec" value="30" min="3" style="width:45px"></div>
+                <div class="setting-item"><label>鍵盤亂序</label><input type="checkbox" id="kbRandom" onchange="renderKeyboard()"></div>
             </div>
-
-            <button onclick="resetApp()" style="width:100%; padding:12px; background:#2ecc71; color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold;">應用設定並開始</button>
+            <button onclick="resetApp()" style="width:100%; padding:12px; background:var(--success); color:white; border:none; border-radius:10px; font-weight:bold;">啟動訓練</button>
         </div>
 
-        <div id="sprintAlert">⚡ 衝刺挑戰！</div>
-        <div class="timer-bar-container" id="timerCont"><div id="timerBar"></div></div>
+        <div class="timer-bar-container" id="timerBarCont"><div id="timerBar"></div></div>
 
         <div class="quiz-container">
-            <div id="instruction" class="instruction">點擊開始</div>
+            <div id="instruction" class="instruction">點擊按鈕開始</div>
             <div id="questionArea" class="notes-display" onclick="handleReplay()">---</div>
             <div class="input-container" id="slotContainer"></div>
         </div>
-
         <div id="answerArea" class="ans-text">正解：--</div>
         <div id="keyboard" class="keyboard"></div>
         <button id="mainBtn" onclick="handleClick()">開始練習</button>
@@ -137,244 +134,166 @@
             <p>Made with ❤️ by <strong>EtOH58daidai</strong> & <strong>Gemini</strong></p>
             <p>有事情 TG: <a href="https://t.me/EtOH58daidai" target="_blank">EtOH58daidai</a></p>
             <details class="changelog">
-                <summary>📜 更新日誌 (Changelog)</summary>
+                <summary>📜 更新日誌與樂理認證</summary>
                 <ul>
-                    <li><strong>v3.4.1</strong>: 修正音訊正確性：亂序播放與位移運算的音高現在會與視覺指令嚴格同步。</li>
-                    <li><strong>v3.4.0</strong>: 修正音訊邏輯：檢查答案時不再播音，避免提前聽到下一題題目。</li>
-                    <li><strong>v3.3.9</strong>: 更名模式為「基礎」與「進階」，優化頁尾說明。</li>
-                    <li><strong>v3.3.7</strong>: 鍵盤一律採用鋼琴佈局，新增「鍵盤亂序」功能。</li>
-                    <li><strong>v3.3.5</strong>: 修正計時器：按下「檢查答案」即時凍結視覺條。</li>
-                    <li><strong>v3.3.1</strong>: 映射優化：第二環節自動打亂音符順序。</li>
-                    <li><strong>v3.3.0</strong>: 邏輯重構：基礎(映射)與進階(運算)模式正式解耦。</li>
+                    <li><strong>v3.5.6</strong>: 修正練習計時器自動啟動邏輯，還原 TG 與更新日誌。</li>
+                    <li><strong>v3.5.5</strong>: 修正「隨機衝刺」參數遺失問題。</li>
+                    <li><strong>v3.5.2</strong>: 邏輯認證版。整合概念定義。</li>
+                    <li><strong>v3.5.0</strong>: 功能解耦：新增「純音程位移」模式。</li>
                 </ul>
             </details>
         </footer>
     </div>
 
 <script>
-    const solArr = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si"];
-    const namArr = ["C", "D", "E", "F", "G", "A", "B"];
-    const freqs = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88];
-    
-    let state = {
-        notes: [], userInputs: [], stepIdx: 0, isAnsMode: false,
-        currentJump: 0, ctx: null, timerInt: null, questionCounter: 0
-    };
-
-    const MODE_STEPS = { mapping: [10, 11], calc: [1, 2, 3, 4, 5] };
+    const solArr = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si"], namArr = ["C", "D", "E", "F", "G", "A", "B"], freqs = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88];
+    let state = { notes: [], userInputs: [], stepIdx: 0, isAnsMode: false, currentJump: 0, ctx: null, timerInt: null, sessionStartTime: null, sessionTimerInt: null, questionCounter: 0 };
+    const MODE_STEPS = { mapping: [10, 11], displacement: [20, 21], comprehensive: [1, 2, 3, 4, 5] };
 
     window.onload = () => {
-        const ref = document.getElementById("refList");
-        ref.innerHTML = "";
-        namArr.forEach((n, i) => {
-            ref.innerHTML += `
-                <div class="ref-item" onclick="playSingle(${i})" style="cursor:pointer;">
-                    <div class="ref-note-name">${n}</div>
-                    <div class="ref-arrow">⭣</div>
-                    <div class="ref-sol-name">${solArr[i]}</div>
-                </div>`;
-        });
+        const ref = document.getElementById("refList"); ref.innerHTML = "";
+        namArr.forEach((n, i) => { ref.innerHTML += `<div class="ref-item" onclick="playSingle(${i})"><div class="ref-note-name">${n}</div><div class="ref-sol-name">${solArr[i]}</div></div>`; });
         updateModeUI(); renderKeyboard();
     };
 
-    function togglePanel(id) {
-        const p = document.getElementById(id);
-        const isShow = (p.style.display === "block");
-        document.querySelectorAll('.info-panel').forEach(el => el.style.display = 'none');
-        p.style.display = isShow ? 'none' : 'block';
+    function togglePanel(id) { const p = document.getElementById(id); const isShow = (p.style.display === "block"); document.querySelectorAll('.info-panel').forEach(el => el.style.display = 'none'); p.style.display = isShow ? 'none' : 'block'; }
+    
+    function updateModeUI() { 
+        document.getElementById("jumpSettings").style.display = (document.getElementById("trainMode").value === 'mapping') ? 'none' : 'block';
+        document.getElementById("sprintNGroup").style.display = (document.getElementById("timerMode").value === 'sprint') ? 'flex' : 'none';
+        if(state.notes.length > 0) startTimer();
     }
 
-    function updateModeUI() {
-        const mode = document.getElementById("trainMode").value;
-        const tMode = document.getElementById("timerMode").value;
-        document.getElementById("calcSettings").style.display = (mode === 'calc') ? 'block' : 'none';
-        document.getElementById("sprintNGroup").style.display = (tMode === 'sprint') ? 'flex' : 'none';
+    function updateSessionTimer() {
+        if (!state.sessionStartTime) return;
+        const diff = Math.floor((Date.now() - state.sessionStartTime) / 1000);
+        const mm = String(Math.floor(diff / 60)).padStart(2, '0');
+        const ss = String(diff % 60).padStart(2, '0');
+        document.getElementById("sessionTimer").innerText = `Practice Time: ${mm}:${ss}`;
     }
 
-    // 核心優化：取得當前步驟應播放的正確音高索引
+    // 確保練習計時器在合適時機啟動
+    function ensureSessionTimer() {
+        if (!state.sessionStartTime) {
+            state.sessionStartTime = Date.now();
+            state.sessionTimerInt = setInterval(updateSessionTimer, 1000);
+        }
+    }
+
     function getStepPitches() {
-        const mode = document.getElementById("trainMode").value;
-        const sid = MODE_STEPS[mode][state.stepIdx];
-        const j = state.currentJump;
+        const mode = document.getElementById("trainMode").value, j = state.currentJump, sid = MODE_STEPS[mode][state.stepIdx];
         switch(sid) {
-            case 10: case 11: case 1: return state.notes;
-            case 2: case 3: return state.notes.map(n => n + j);
+            case 2: case 3: case 20: return state.notes.map(n => n + j);
             case 4: case 5: return state.notes.map(n => n + j * 2);
+            case 21: return state.notes.map(n => n + j); 
             default: return state.notes;
         }
     }
 
-    function shouldBeSilent() {
-        const mode = document.getElementById("trainMode").value;
-        const sid = MODE_STEPS[mode][state.stepIdx];
-        return (sid === 10 || sid === 3);
-    }
-
     function playNotes(targetIndices, force = false) {
-        if (!force && shouldBeSilent()) return;
-        if (!state.ctx) state.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const sid = MODE_STEPS[document.getElementById("trainMode").value][state.stepIdx];
+        if (!force && (sid === 10 || sid === 3)) return;
+        if (!state.ctx) state.ctx = new AudioContext();
         if (state.ctx.state === 'suspended') state.ctx.resume();
-        const now = state.ctx.currentTime;
-        const baseOct = parseInt(document.getElementById("baseOctave").value);
+        const now = state.ctx.currentTime, oct = parseInt(document.getElementById("baseOctave").value);
         targetIndices.forEach((idx, i) => {
-            const osc = state.ctx.createOscillator(); const gain = state.ctx.createGain();
-            const fIdx = ((idx % 7) + 7) % 7;
-            const shift = Math.pow(2, Math.floor(idx / 7) + baseOct);
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(freqs[fIdx] * shift, now + i * 0.4);
-            gain.gain.setValueAtTime(0, now + i * 0.4);
-            gain.gain.linearRampToValueAtTime(0.1, now + i * 0.4 + 0.01);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.4 + 0.5);
-            osc.connect(gain); gain.connect(state.ctx.destination);
-            osc.start(now + i * 0.4); osc.stop(now + i * 0.4 + 0.6);
+            const osc = state.ctx.createOscillator(), gain = state.ctx.createGain();
+            osc.frequency.setValueAtTime(freqs[((idx % 7) + 7) % 7] * Math.pow(2, Math.floor(idx / 7) + oct), now + i * 0.4);
+            gain.gain.setValueAtTime(0, now + i * 0.4); gain.gain.linearRampToValueAtTime(0.1, now + i * 0.4 + 0.01); gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.4 + 0.5);
+            osc.connect(gain); gain.connect(state.ctx.destination); osc.start(now + i * 0.4); osc.stop(now + i * 0.4 + 0.6);
         });
     }
 
-    function playSingle(i) { playNotes([i], true); }
-
-    function startTimer() {
+    function resetApp() { 
+        state.notes = []; state.stepIdx = 0; state.questionCounter = 0; state.isAnsMode = false; 
         clearInterval(state.timerInt);
-        const tMode = document.getElementById("timerMode").value;
-        const cont = document.getElementById("timerCont");
-        if (tMode === 'off') { cont.style.display = "none"; return; }
-        let isTimed = (tMode === 'always');
-        if (tMode === 'sprint') {
-            const n = parseInt(document.getElementById("sprintN").value);
-            isTimed = (state.questionCounter > 0 && state.questionCounter % (n + 1) === 0);
-        }
-        document.getElementById("sprintAlert").style.display = (isTimed && tMode === 'sprint') ? "block" : "none";
-        if (!isTimed) { cont.style.display = "none"; return; }
-        cont.style.display = "block";
-        const bar = document.getElementById("timerBar");
-        const sec = parseInt(document.getElementById("timerSec").value);
-        bar.style.transition = "none"; bar.style.width = "100%";
-        setTimeout(() => { bar.style.transition = `width ${sec}s linear`; bar.style.width = "0%"; }, 50);
-        state.timerInt = setInterval(() => { if (!state.isAnsMode) handleClick(); }, sec * 1000);
-    }
-
-    function resetApp() {
-        state.notes = []; state.stepIdx = 0; state.questionCounter = 0; state.isAnsMode = false;
-        clearInterval(state.timerInt); document.getElementById("settingsPanel").style.display = "none";
-        handleClick();
+        clearInterval(state.sessionTimerInt);
+        state.sessionStartTime = null; // 強制歸零
+        ensureSessionTimer(); // 重新啟動
+        document.getElementById("settingsPanel").style.display = "none"; 
+        handleClick(); 
     }
 
     function handleClick() {
-        const mode = document.getElementById("trainMode").value;
-        const steps = MODE_STEPS[mode];
+        ensureSessionTimer(); // 點擊大綠鈕也要能啟動
+        const mode = document.getElementById("trainMode").value, steps = MODE_STEPS[mode];
         if (state.notes.length === 0) { generateNewTask(); return; }
-
         if (!state.isAnsMode) {
-            checkAnswer(steps[state.stepIdx]);
+            state.isAnsMode = true; clearInterval(state.timerInt);
+            const bar = document.getElementById("timerBar"); if (bar) { bar.style.transition = 'none'; bar.style.width = window.getComputedStyle(bar).width; }
+            const j = state.currentJump, sid = steps[state.stepIdx]; let correct = [];
+            if (sid === 10) correct = state.notes.map(n => solArr[n]);
+            else if (sid === 11 || sid === 1) correct = state.notes.map(n => namArr[n]);
+            else if (sid === 2 || sid === 20) correct = state.notes.map(n => namArr[(n+j)%7]);
+            else if (sid === 3) correct = state.notes.map(n => solArr[(n+j)%7]);
+            else if (sid === 21) correct = state.notes.map(n => solArr[(n+j)%7]);
+            else if (sid === 4) correct = state.notes.map(n => solArr[(n+j*2)%7]);
+            else if (sid === 5) correct = state.notes.map(n => namArr[(n+j*2)%7]);
+            
+            state.notes.forEach((_, i) => { const s = document.getElementById("slot" + i); if (state.userInputs[i] === correct[i]) s.classList.add("slot-correct"); else { s.classList.add("slot-wrong"); s.innerText = state.userInputs[i] || "X"; const keys = document.querySelectorAll('.key'); keys.forEach(k => { if(k.innerText === correct[i]) { k.classList.add('hint-correct'); setTimeout(()=>k.classList.remove('hint-correct'), 800); }}); }});
+            document.getElementById("answerArea").innerText = "正解：" + correct.join(" "); document.getElementById("answerArea").style.visibility = "visible"; document.getElementById("mainBtn").innerText = "下一步驟";
         } else {
-            state.stepIdx++;
-            if (state.stepIdx >= steps.length) {
-                generateNewTask();
-            } else {
-                // 如果是基礎模式且進入亂序環節，先洗牌
-                if (mode === 'mapping' && steps[state.stepIdx] === 11) {
-                    state.notes.sort(() => Math.random() - 0.5);
-                }
-                renderStep(); 
-                playNotes(getStepPitches()); // 使用優化後的音高取得函式
-            }
+            state.stepIdx++; if (state.stepIdx >= steps.length) generateNewTask(); else { if (mode === 'mapping' && steps[state.stepIdx] === 11) state.notes.sort(() => Math.random() - 0.5); renderStep(); playNotes(getStepPitches()); }
         }
     }
 
     function generateNewTask() {
-        state.stepIdx = 0; state.questionCounter++; state.isAnsMode = false;
-        const mode = document.getElementById("trainMode").value;
+        state.stepIdx = 0; state.questionCounter++; state.isAnsMode = false; const mode = document.getElementById("trainMode").value;
         state.currentJump = (mode === 'mapping') ? 0 : parseInt(document.getElementById("jumpVal").value);
-        if (mode === 'calc' && document.getElementById("jumpMode").value === 'random') state.currentJump = Math.floor(Math.random()*5)+1;
-        const count = parseInt(document.getElementById("noteCount").value) || 4;
-        state.notes = []; let pool = [0,1,2,3,4,5,6];
-        for(let i=0; i<count; i++) {
-            if (pool.length === 0) pool = [0,1,2,3,4,5,6];
-            state.notes.push(pool.splice(Math.floor(Math.random()*pool.length), 1)[0]);
-        }
-        renderStep(); 
-        playNotes(getStepPitches());
+        if (document.getElementById("jumpMode").value === 'random' && mode !== 'mapping') state.currentJump = Math.floor(Math.random()*5)+1;
+        const count = parseInt(document.getElementById("noteCount").value) || 4; state.notes = []; let pool = [0,1,2,3,4,5,6];
+        for(let i=0; i<count; i++) state.notes.push(pool.splice(Math.floor(Math.random()*pool.length), 1)[0]);
+        renderStep(); playNotes(getStepPitches());
     }
 
     function renderStep() {
-        const mode = document.getElementById("trainMode").value;
-        const sid = MODE_STEPS[mode][state.stepIdx];
-        state.isAnsMode = false; state.userInputs = [];
-        const inst = document.getElementById("instruction"); const qArea = document.getElementById("questionArea");
-        const sCont = document.getElementById("slotContainer");
+        const mode = document.getElementById("trainMode").value, sid = MODE_STEPS[mode][state.stepIdx];
+        state.isAnsMode = false; state.userInputs = []; const sCont = document.getElementById("slotContainer");
         document.getElementById("answerArea").style.visibility = "hidden"; sCont.innerHTML = "";
-        state.notes.forEach((_, i) => {
-            const s = document.createElement("div"); s.className = "input-slot"; s.id = "slot" + i; sCont.appendChild(s);
-        });
-        const j = state.currentJump;
+        state.notes.forEach((_, i) => { const s = document.createElement("div"); s.className = "input-slot"; s.id = "slot" + i; sCont.appendChild(s); });
+        const inst = document.getElementById("instruction"), qArea = document.getElementById("questionArea"), j = state.currentJump;
         switch(sid) {
             case 10: inst.innerText = "音名 ➔ 唱名"; qArea.innerText = state.notes.map(n => namArr[n]).join(" "); break;
-            case 11: inst.innerText = "唱名 ➔ 音名"; qArea.innerText = state.notes.map(n => solArr[n]).join(" "); break;
-            case 1:  inst.innerText = "唱名 ➔ 音名"; qArea.innerText = state.notes.map(n => solArr[n]).join(" "); break;
-            case 2:  inst.innerText = `音名位移 (+${j})`; qArea.innerText = state.notes.map(n => namArr[n]).join(" "); break;
-            case 3:  inst.innerText = "音名 ➔ 唱名"; qArea.innerText = state.notes.map(n => namArr[(n+j)%7]).join(" "); break;
-            case 4:  inst.innerText = `唱名位移 (+${j})`; qArea.innerText = state.notes.map(n => solArr[(n+j)%7]).join(" "); break;
-            case 5:  inst.innerText = "唱名 ➔ 音名"; qArea.innerText = state.notes.map(n => solArr[(n+j*2)%7]).join(" "); break;
+            case 11: inst.innerText = "唱名 ➔ 音名 (亂序)"; qArea.innerText = state.notes.map(n => solArr[n]).join(" "); break;
+            case 20: inst.innerText = `音名位移 (+${j})`; qArea.innerText = state.notes.map(n => namArr[n]).join(" "); break;
+            case 21: inst.innerText = `唱名位移 (+${j})`; qArea.innerText = state.notes.map(n => solArr[n]).join(" "); break;
+            case 1: inst.innerText = "唱名 ➔ 音名"; qArea.innerText = state.notes.map(n => solArr[n]).join(" "); break;
+            case 2: inst.innerText = `音名位移 (+${j})`; qArea.innerText = state.notes.map(n => namArr[n]).join(" "); break;
+            case 3: inst.innerText = "音名 ➔ 唱名"; qArea.innerText = state.notes.map(n => namArr[(n+j)%7]).join(" "); break;
+            case 4: inst.innerText = `唱名位移 (+${j})`; qArea.innerText = state.notes.map(n => solArr[(n+j)%7]).join(" "); break;
+            case 5: inst.innerText = "唱名 ➔ 音名"; qArea.innerText = state.notes.map(n => solArr[(n+j*2)%7]).join(" "); break;
         }
         renderKeyboard(); startTimer(); document.getElementById("mainBtn").innerText = "檢查答案";
     }
 
-    function checkAnswer(stepId) {
-        state.isAnsMode = true;
-        clearInterval(state.timerInt);
-        const bar = document.getElementById("timerBar");
-        if (bar) {
-            const currentPxWidth = window.getComputedStyle(bar).width;
-            bar.style.transition = 'none';
-            bar.style.width = currentPxWidth;
+    function startTimer() {
+        clearInterval(state.timerInt); const mode = document.getElementById("timerMode").value;
+        const bar = document.getElementById("timerBar"), cont = document.getElementById("timerBarCont");
+        if (mode === 'off') { cont.style.display = "none"; return; }
+        
+        let isTimed = (mode === 'always');
+        if (mode === 'sprint') {
+            const n = parseInt(document.getElementById("sprintN").value);
+            isTimed = (state.questionCounter > 0 && state.questionCounter % (n + 1) === 0);
         }
-        const j = state.currentJump;
-        let correct = [];
-        if (stepId === 10) { correct = state.notes.map(n => solArr[n]); }
-        else if (stepId === 11 || stepId === 1) { correct = state.notes.map(n => namArr[n]); }
-        else if (stepId === 2) { correct = state.notes.map(n => namArr[(n+j)%7]); }
-        else if (stepId === 3) { correct = state.notes.map(n => solArr[(n+j)%7]); }
-        else if (stepId === 4) { correct = state.notes.map(n => solArr[(n+j*2)%7]); }
-        else if (stepId === 5) { correct = state.notes.map(n => namArr[(n+j*2)%7]); }
-
-        state.notes.forEach((_, i) => {
-            const slot = document.getElementById("slot" + i);
-            if (state.userInputs[i] === correct[i]) slot.classList.add("slot-correct");
-            else {
-                slot.classList.add("slot-wrong"); slot.innerText = state.userInputs[i] || "X";
-                const keys = document.querySelectorAll('.key');
-                keys.forEach(k => { if(k.innerText === correct[i]) { k.classList.add('hint-correct'); setTimeout(()=>k.classList.remove('hint-correct'), 800); }});
-            }
-        });
-        document.getElementById("answerArea").innerText = "正解：" + correct.join(" ");
-        document.getElementById("answerArea").style.visibility = "visible";
-        document.getElementById("mainBtn").innerText = "下一步驟";
+        if (!isTimed) { cont.style.display = "none"; return; }
+        
+        bar.style.transition = "none"; bar.style.width = "100%"; cont.style.display = "block";
+        const sec = parseInt(document.getElementById("timerSec").value);
+        setTimeout(() => { bar.style.transition = `width ${sec}s linear`; bar.style.width = "0%"; }, 50);
+        state.timerInt = setInterval(() => { if (!state.isAnsMode) handleClick(); }, sec * 1000);
     }
 
     function renderKeyboard() {
-        const kb = document.getElementById("keyboard");
-        const sid = MODE_STEPS[document.getElementById("trainMode").value][state.stepIdx];
-        const isRandom = document.getElementById("kbRandom").checked;
-        kb.innerHTML = "";
-        const isSol = (sid === 10 || sid === 3 || sid === 4);
-        let keys = [...(isSol ? solArr : namArr)];
-        if (isRandom) keys.sort(() => Math.random() - 0.5);
-        keys.forEach(kText => {
-            const k = document.createElement("div"); k.className = "key"; k.innerText = kText;
-            k.onclick = () => { if (!state.isAnsMode && state.userInputs.length < state.notes.length) { state.userInputs.push(kText); updateSlots(); }};
-            kb.appendChild(k);
-        });
-        const del = document.createElement("div"); del.className = "key control"; del.innerText = "⌫";
-        del.onclick = () => { if(!state.isAnsMode) { state.userInputs.pop(); updateSlots(); }};
-        kb.appendChild(del);
+        const kb = document.getElementById("keyboard"), mode = document.getElementById("trainMode").value, sid = MODE_STEPS[mode][state.stepIdx];
+        const isSol = (sid === 10 || sid === 3 || sid === 4 || sid === 21); kb.innerHTML = "";
+        let keys = [...(isSol ? solArr : namArr)]; if (document.getElementById("kbRandom").checked) keys.sort(() => Math.random() - 0.5);
+        keys.forEach(kText => { const k = document.createElement("div"); k.className = "key"; k.innerText = kText; k.onclick = () => { if (!state.isAnsMode && state.userInputs.length < state.notes.length) { state.userInputs.push(kText); updateSlots(); }}; kb.appendChild(k); });
+        const del = document.createElement("div"); del.className = "key control"; del.innerText = "⌫"; del.onclick = () => { if(!state.isAnsMode) { state.userInputs.pop(); updateSlots(); }}; kb.appendChild(del);
     }
-
-    function updateSlots() {
-        state.notes.forEach((_, i) => {
-            const s = document.getElementById("slot" + i);
-            if (s) s.innerText = state.userInputs[i] || "";
-        });
-    }
-
+    function updateSlots() { state.notes.forEach((_, i) => { document.getElementById("slot" + i).innerText = state.userInputs[i] || ""; }); }
     function handleReplay() { playNotes(getStepPitches()); }
+    function playSingle(i) { playNotes([i], true); }
 </script>
 </body>
 </html>
