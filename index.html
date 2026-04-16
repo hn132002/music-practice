@@ -254,7 +254,7 @@
         const inst = document.getElementById("instruction"), qArea = document.getElementById("questionArea"), j = state.currentJump;
         switch(sid) {
             case 10: inst.innerText = "音名 ➔ 唱名"; qArea.innerText = state.notes.map(n => namArr[n]).join(" "); break;
-            case 11: inst.innerText = "唱名 ➔ 音名 (亂序)"; qArea.innerText = state.notes.map(n => solArr[n]).join(" "); break;
+            case 11: inst.innerText = "唱名 ➔ 音名"; qArea.innerText = state.notes.map(n => solArr[n]).join(" "); break;
             case 20: inst.innerText = `音名位移 (+${j})`; qArea.innerText = state.notes.map(n => namArr[n]).join(" "); break;
             case 21: inst.innerText = `唱名位移 (+${j})`; qArea.innerText = state.notes.map(n => solArr[n]).join(" "); break;
             case 1: inst.innerText = "唱名 ➔ 音名"; qArea.innerText = state.notes.map(n => solArr[n]).join(" "); break;
