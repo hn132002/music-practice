@@ -3,49 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>橙色的樂理強化 v3.5.6</title>
+    <title>橙色的樂理強化 v3.5.8</title>
     <style>
         :root { --primary: #3498db; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; }
         body { font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: var(--bg); margin: 0; }
         .card { background: white; padding: 25px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; max-width: 500px; width: 100%; position: relative; }
-        
         .top-nav { position: absolute; top: 15px; width: calc(100% - 40px); display: flex; justify-content: space-between; padding: 0 5px; z-index: 10; }
         .nav-item { cursor: pointer; font-size: 1.3em; filter: grayscale(0.3); transition: 0.2s; text-decoration: none; color: #333; }
         .app-title { color: var(--primary); margin: 0; font-size: 1.4em; font-weight: 900; }
-        
-        .session-timer { background: #eef2f7; color: #34495e; padding: 6px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; font-family: 'Courier New', monospace; display: inline-block; margin-top: 8px; margin-bottom: 12px; border: 1px solid #dcdde1; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
-        
+        .session-timer { background: #eef2f7; color: #34495e; padding: 6px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; font-family: 'Courier New', monospace; display: inline-block; margin-top: 8px; margin-bottom: 12px; border: 1px solid #dcdde1; }
         .version-tag { color: #95a5a6; font-size: 0.7em; font-family: monospace; margin-bottom: 5px; }
         .info-panel { background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; display: none; font-size: 0.85em; border: 1px solid #ddd; max-height: 70vh; overflow-y: auto; }
         .setting-group { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
         .group-title { font-weight: 800; color: var(--primary); display: block; margin-bottom: 8px; font-size: 1.1em; }
         .setting-item { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; }
-        
         #refList { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; gap: 4px; overflow-x: auto; }
         .ref-item { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 42px; background: #fff; padding: 8px 2px; border-radius: 10px; border: 1px solid #eee; cursor: pointer; }
         .ref-note-name { font-weight: bold; color: var(--primary); font-size: 1.1em; }
         .ref-sol-name { font-weight: 800; color: #2c3e50; }
-        
         .concept-card { background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--primary); font-size: 0.95em; line-height: 1.4; }
         .timer-bar-container { width: 100%; height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-bottom: 10px; display: none; }
         #timerBar { height: 100%; background: var(--error); width: 100%; transition: width linear; }
-        
         .quiz-container { background: #f9f9f9; border-radius: 16px; padding: 15px; margin: 10px 0; border: 2px solid #eee; }
         .instruction { font-size: 1.1em; font-weight: 800; color: #7f8c8d; margin-bottom: 8px; }
         .notes-display { font-size: 2.2em; font-weight: bold; color: #2c3e50; margin-bottom: 12px; cursor: pointer; letter-spacing: 2px; }
-        
         .input-container { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; min-height: 48px; }
         .input-slot { width: 45px; height: 45px; border-bottom: 3px solid #bdc3c7; font-size: 1.2em; font-weight: bold; display: flex; align-items: center; justify-content: center; }
         .slot-correct { color: var(--success) !important; border-bottom-color: var(--success) !important; }
         .slot-wrong { color: var(--error) !important; border-bottom-color: var(--error) !important; }
-        
         .keyboard { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 15px; }
         .key { padding: 15px 0; background: #fff; border-radius: 8px; font-weight: bold; cursor: pointer; border: 1px solid #dcdde1; box-shadow: 0 3px 0 #eee; font-size: 0.9em; -webkit-tap-highlight-color: transparent; }
         .key.hint-correct { background: var(--success) !important; color: white !important; }
         .key.control { background: #95a5a6; color: white; grid-column: span 7; margin-top: 4px; padding: 10px 0; font-size: 1.2em; }
-        
         #mainBtn { padding: 16px; font-size: 1.2em; cursor: pointer; border: none; border-radius: 14px; font-weight: bold; width: 100%; color: white; background: var(--success); margin-top: 15px; box-shadow: 0 4px 0 #27ae60; outline: none; }
-        .ans-text { margin-top: 8px; font-weight: bold; color: #7f8c8d; height: 1.2em; visibility: hidden; }
+        .ans-text { margin-top: 8px; font-weight: bold; color: #7f8c8d; height: 1.2em; visibility: hidden; cursor: pointer; }
         .footer { margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px; color: #95a5a6; font-size: 0.8em; text-align: center; }
         .footer a { color: #3498db; text-decoration: none; }
         .changelog { margin-top: 10px; text-align: left; background: #f9f9f9; padding: 12px; border-radius: 10px; font-size: 0.85em; border: 1px solid #eee; }
@@ -63,14 +54,14 @@
         </div>
 
         <h1 class="app-title">橙色的樂理強化</h1>
-        <div class="version-tag">Version 3.5.6 Verified</div>
+        <div class="version-tag">Version 3.5.8 Verified</div>
         <div id="sessionTimer" class="session-timer">Practice Time: 00:00</div>
 
         <div id="pianoPanel" class="info-panel">
             <span class="group-title">📚 樂理核心定義</span>
             <div class="concept-card"><b>1. 固定唱名 (Fixed-Do)</b>：C=Do, D=Re, E=Mi... 映射關係不變。</div>
-            <div class="concept-card" style="border-left-color: var(--success);"><b>2. 音級位移 (Degree Shift)</b>：在自然音階 1-7 中循環移動。+1 代表移動到下一個音級（二度音程）。</div>
-            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 累積邏輯</b>：綜合模式中位移會累積。Step 5 答案為原始音位移 +2。</div>
+            <div class="concept-card" style="border-left-color: var(--success);"><b>2. 音級位移 (Degree Shift)</b>：在自然音階 1-7 中循環移動。+1 代表移動到下一個音級。</div>
+            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 累積邏輯</b>：綜合模式中位移累積。Step 5 為原始音位移 +2。</div>
             <span class="group-title">快速映射對照</span>
             <div id="refList"></div>
         </div>
@@ -126,7 +117,7 @@
             <div id="questionArea" class="notes-display" onclick="handleReplay()">---</div>
             <div class="input-container" id="slotContainer"></div>
         </div>
-        <div id="answerArea" class="ans-text">正解：--</div>
+        <div id="answerArea" class="ans-text" onclick="handleReplay()">正解：--</div>
         <div id="keyboard" class="keyboard"></div>
         <button id="mainBtn" onclick="handleClick()">開始練習</button>
 
@@ -136,10 +127,9 @@
             <details class="changelog">
                 <summary>📜 更新日誌</summary>
                 <ul>
-                    <li><strong>v3.5.6</strong>: 修正練習計時器自動啟動邏輯，還原 TG 與更新日誌。</li>
-                    <li><strong>v3.5.5</strong>: 修正「隨機衝刺」參數遺失問題。</li>
-                    <li><strong>v3.5.2</strong>: 邏輯認證版。整合概念定義。</li>
-                    <li><strong>v3.5.0</strong>: 功能解耦：新增「純音程位移」模式。</li>
+                    <li><strong>v3.5.8</strong>: 修正發聲時機：檢查答案時不再自動播音，改為「點擊正解文字或題目區」才發聲。</li>
+                    <li><strong>v3.5.7</strong>: 補齊發聲邏輯：按下檢查答案時觸發正確音高。</li>
+                    <li><strong>v3.5.6</strong>: 修正練習計時器自動啟動邏輯，還原 TG 與日誌。</li>
                 </ul>
             </details>
         </footer>
@@ -157,13 +147,11 @@
     };
 
     function togglePanel(id) { const p = document.getElementById(id); const isShow = (p.style.display === "block"); document.querySelectorAll('.info-panel').forEach(el => el.style.display = 'none'); p.style.display = isShow ? 'none' : 'block'; }
-    
     function updateModeUI() { 
         document.getElementById("jumpSettings").style.display = (document.getElementById("trainMode").value === 'mapping') ? 'none' : 'block';
         document.getElementById("sprintNGroup").style.display = (document.getElementById("timerMode").value === 'sprint') ? 'flex' : 'none';
         if(state.notes.length > 0) startTimer();
     }
-
     function updateSessionTimer() {
         if (!state.sessionStartTime) return;
         const diff = Math.floor((Date.now() - state.sessionStartTime) / 1000);
@@ -171,15 +159,12 @@
         const ss = String(diff % 60).padStart(2, '0');
         document.getElementById("sessionTimer").innerText = `Practice Time: ${mm}:${ss}`;
     }
-
-    // 確保練習計時器在合適時機啟動
     function ensureSessionTimer() {
         if (!state.sessionStartTime) {
             state.sessionStartTime = Date.now();
             state.sessionTimerInt = setInterval(updateSessionTimer, 1000);
         }
     }
-
     function getStepPitches() {
         const mode = document.getElementById("trainMode").value, j = state.currentJump, sid = MODE_STEPS[mode][state.stepIdx];
         switch(sid) {
@@ -189,7 +174,6 @@
             default: return state.notes;
         }
     }
-
     function playNotes(targetIndices, force = false) {
         const sid = MODE_STEPS[document.getElementById("trainMode").value][state.stepIdx];
         if (!force && (sid === 10 || sid === 3)) return;
@@ -203,24 +187,18 @@
             osc.connect(gain); gain.connect(state.ctx.destination); osc.start(now + i * 0.4); osc.stop(now + i * 0.4 + 0.6);
         });
     }
-
-    function resetApp() { 
-        state.notes = []; state.stepIdx = 0; state.questionCounter = 0; state.isAnsMode = false; 
-        clearInterval(state.timerInt);
-        clearInterval(state.sessionTimerInt);
-        state.sessionStartTime = null; // 強制歸零
-        ensureSessionTimer(); // 重新啟動
-        document.getElementById("settingsPanel").style.display = "none"; 
-        handleClick(); 
-    }
+    function resetApp() { state.notes = []; state.stepIdx = 0; state.questionCounter = 0; state.isAnsMode = false; clearInterval(state.timerInt); clearInterval(state.sessionTimerInt); state.sessionStartTime = null; ensureSessionTimer(); document.getElementById("settingsPanel").style.display = "none"; handleClick(); }
 
     function handleClick() {
-        ensureSessionTimer(); // 點擊大綠鈕也要能啟動
+        ensureSessionTimer(); 
         const mode = document.getElementById("trainMode").value, steps = MODE_STEPS[mode];
         if (state.notes.length === 0) { generateNewTask(); return; }
         if (!state.isAnsMode) {
             state.isAnsMode = true; clearInterval(state.timerInt);
             const bar = document.getElementById("timerBar"); if (bar) { bar.style.transition = 'none'; bar.style.width = window.getComputedStyle(bar).width; }
+            
+            // 重要：取消這裡的 playNotes，達成「檢查答案時不自動發聲」
+            
             const j = state.currentJump, sid = steps[state.stepIdx]; let correct = [];
             if (sid === 10) correct = state.notes.map(n => solArr[n]);
             else if (sid === 11 || sid === 1) correct = state.notes.map(n => namArr[n]);
@@ -236,7 +214,6 @@
             state.stepIdx++; if (state.stepIdx >= steps.length) generateNewTask(); else { if (mode === 'mapping' && steps[state.stepIdx] === 11) state.notes.sort(() => Math.random() - 0.5); renderStep(); playNotes(getStepPitches()); }
         }
     }
-
     function generateNewTask() {
         state.stepIdx = 0; state.questionCounter++; state.isAnsMode = false; const mode = document.getElementById("trainMode").value;
         state.currentJump = (mode === 'mapping') ? 0 : parseInt(document.getElementById("jumpVal").value);
@@ -245,7 +222,6 @@
         for(let i=0; i<count; i++) state.notes.push(pool.splice(Math.floor(Math.random()*pool.length), 1)[0]);
         renderStep(); playNotes(getStepPitches());
     }
-
     function renderStep() {
         const mode = document.getElementById("trainMode").value, sid = MODE_STEPS[mode][state.stepIdx];
         state.isAnsMode = false; state.userInputs = []; const sCont = document.getElementById("slotContainer");
@@ -265,25 +241,18 @@
         }
         renderKeyboard(); startTimer(); document.getElementById("mainBtn").innerText = "檢查答案";
     }
-
     function startTimer() {
         clearInterval(state.timerInt); const mode = document.getElementById("timerMode").value;
         const bar = document.getElementById("timerBar"), cont = document.getElementById("timerBarCont");
         if (mode === 'off') { cont.style.display = "none"; return; }
-        
         let isTimed = (mode === 'always');
-        if (mode === 'sprint') {
-            const n = parseInt(document.getElementById("sprintN").value);
-            isTimed = (state.questionCounter > 0 && state.questionCounter % (n + 1) === 0);
-        }
+        if (mode === 'sprint') { const n = parseInt(document.getElementById("sprintN").value); isTimed = (state.questionCounter > 0 && state.questionCounter % (n + 1) === 0); }
         if (!isTimed) { cont.style.display = "none"; return; }
-        
         bar.style.transition = "none"; bar.style.width = "100%"; cont.style.display = "block";
         const sec = parseInt(document.getElementById("timerSec").value);
         setTimeout(() => { bar.style.transition = `width ${sec}s linear`; bar.style.width = "0%"; }, 50);
         state.timerInt = setInterval(() => { if (!state.isAnsMode) handleClick(); }, sec * 1000);
     }
-
     function renderKeyboard() {
         const kb = document.getElementById("keyboard"), mode = document.getElementById("trainMode").value, sid = MODE_STEPS[mode][state.stepIdx];
         const isSol = (sid === 10 || sid === 3 || sid === 4 || sid === 21); kb.innerHTML = "";
@@ -292,7 +261,9 @@
         const del = document.createElement("div"); del.className = "key control"; del.innerText = "⌫"; del.onclick = () => { if(!state.isAnsMode) { state.userInputs.pop(); updateSlots(); }}; kb.appendChild(del);
     }
     function updateSlots() { state.notes.forEach((_, i) => { document.getElementById("slot" + i).innerText = state.userInputs[i] || ""; }); }
-    function handleReplay() { playNotes(getStepPitches()); }
+    
+    // 修正：handleReplay 增加 force=true，確保在答案模式下點擊一定發聲
+    function handleReplay() { playNotes(getStepPitches(), true); }
     function playSingle(i) { playNotes([i], true); }
 </script>
 </body>
