@@ -3,31 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>橙色的樂理強化訓練器 v3.3.9</title>
+    <title>橙色的樂理強化訓練器 v3.4.1</title>
     <style>
-        :root { --primary: #3498db; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; }
-        body { font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: var(--bg); margin: 0; }
+        :root { --primary: #3498db; --success: --2ecc71; --error: #e74c3c; --bg: #f0f4f8; }
+        body { font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: #f0f4f8; margin: 0; }
         .card { background: white; padding: 25px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; max-width: 500px; width: 100%; position: relative; }
         
         .top-nav { position: absolute; top: 15px; width: calc(100% - 40px); display: flex; justify-content: space-between; padding: 0 5px; z-index: 10; }
         .nav-item { cursor: pointer; font-size: 1.3em; filter: grayscale(0.3); transition: 0.2s; text-decoration: none; color: #333; }
-        .app-title { color: var(--primary); margin: 0; font-size: 1.4em; font-weight: 900; }
+        .app-title { color: #3498db; margin: 0; font-size: 1.4em; font-weight: 900; }
         .version-tag { color: #95a5a6; font-size: 0.7em; font-family: monospace; margin-bottom: 20px; }
 
         .info-panel { background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; display: none; font-size: 0.85em; border: 1px solid #ddd; max-height: 70vh; overflow-y: auto; }
         .setting-group { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
-        .group-title { font-weight: 800; color: var(--primary); display: block; margin-bottom: 8px; font-size: 1.1em; }
+        .group-title { font-weight: 800; color: #3498db; display: block; margin-bottom: 8px; font-size: 1.1em; }
         .setting-item { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; }
 
         #refList { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; gap: 4px; overflow-x: auto; }
         .ref-item { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 42px; background: #fff; padding: 8px 2px; border-radius: 10px; border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .ref-note-name { font-weight: bold; color: var(--primary); font-size: 1.1em; }
+        .ref-note-name { font-weight: bold; color: #3498db; font-size: 1.1em; }
         .ref-arrow { color: #bdc3c7; font-size: 0.8em; margin: 2px 0; }
         .ref-sol-name { font-weight: 800; color: #2c3e50; }
 
         .timer-bar-container { width: 100%; height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-bottom: 10px; display: none; }
-        #timerBar { height: 100%; background: var(--error); width: 100%; transition: width linear; }
-        #sprintAlert { color: var(--error); font-weight: bold; font-size: 0.9em; display: none; margin-bottom: 5px; animation: blink 1s infinite; }
+        #timerBar { height: 100%; background: #e74c3c; width: 100%; transition: width linear; }
+        #sprintAlert { color: #e74c3c; font-weight: bold; font-size: 0.9em; display: none; margin-bottom: 5px; animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         .quiz-container { background: #f9f9f9; border-radius: 16px; padding: 15px; margin: 10px 0; border: 2px solid #eee; }
@@ -35,16 +35,16 @@
         .notes-display { font-size: 2.2em; font-weight: bold; color: #2c3e50; margin-bottom: 12px; cursor: pointer; min-height: 1.2em; letter-spacing: 2px; }
         .input-container { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
         .input-slot { width: 45px; height: 45px; border-bottom: 3px solid #bdc3c7; font-size: 1.2em; font-weight: bold; display: flex; align-items: center; justify-content: center; }
-        .slot-correct { color: var(--success) !important; border-bottom-color: var(--success) !important; }
-        .slot-wrong { color: var(--error) !important; border-bottom-color: var(--error) !important; }
+        .slot-correct { color: #2ecc71 !important; border-bottom-color: #2ecc71 !important; }
+        .slot-wrong { color: #e74c3c !important; border-bottom-color: #e74c3c !important; }
 
         .keyboard { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 15px; }
         .key { padding: 15px 0; background: #fff; border-radius: 8px; font-weight: bold; cursor: pointer; border: 1px solid #dcdde1; box-shadow: 0 3px 0 #eee; font-size: 0.9em; }
         .key:active { transform: translateY(2px); box-shadow: none; background: #f0f0f0; }
-        .key.hint-correct { background: var(--success) !important; color: white !important; }
+        .key.hint-correct { background: #2ecc71 !important; color: white !important; }
         .key.control { background: #95a5a6; color: white; grid-column: span 7; margin-top: 4px; padding: 10px 0; font-size: 1.2em; }
 
-        #mainBtn { padding: 16px; font-size: 1.2em; cursor: pointer; border: none; border-radius: 14px; font-weight: bold; width: 100%; color: white; background: var(--success); margin-top: 15px; box-shadow: 0 4px 0 #27ae60; outline: none; }
+        #mainBtn { padding: 16px; font-size: 1.2em; cursor: pointer; border: none; border-radius: 14px; font-weight: bold; width: 100%; color: white; background: #2ecc71; margin-top: 15px; box-shadow: 0 4px 0 #27ae60; outline: none; }
         .ans-text { margin-top: 8px; font-weight: bold; color: #7f8c8d; height: 1.2em; visibility: hidden; }
 
         .footer { margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px; color: #95a5a6; font-size: 0.8em; text-align: center; width: 100%; }
@@ -52,7 +52,6 @@
         .changelog { margin-top: 10px; text-align: left; background: #f9f9f9; padding: 12px; border-radius: 10px; font-size: 0.85em; border: 1px solid #eee; }
         .changelog summary { cursor: pointer; color: #7f8c8d; font-weight: bold; margin-bottom: 5px; outline: none; }
         .changelog ul { margin: 5px 0; padding-left: 20px; list-style-type: square; }
-        .changelog li { margin-bottom: 4px; }
     </style>
 </head>
 <body>
@@ -66,7 +65,7 @@
         </div>
 
         <h1 class="app-title">橙色的樂理強化訓練器</h1>
-        <div class="version-tag">Version 3.3.9</div>
+        <div class="version-tag">Version 3.4.1</div>
 
         <div id="pianoPanel" class="info-panel">
             <span class="group-title">橫向映射對照表</span>
@@ -105,10 +104,7 @@
 
             <div class="setting-group">
                 <span class="group-title">訓練強度</span>
-                <div class="setting-item">
-                    <label>鍵盤亂序 (Piano Shuffle)</label>
-                    <input type="checkbox" id="kbRandom" onchange="renderKeyboard()">
-                </div>
+                <div class="setting-item"><label>鍵盤亂序</label><input type="checkbox" id="kbRandom" onchange="renderKeyboard()"></div>
                 <div class="setting-item">
                     <label>計時模式</label>
                     <select id="timerMode" onchange="updateModeUI()">
@@ -117,11 +113,11 @@
                         <option value="sprint">隨機衝刺</option>
                     </select>
                 </div>
-                <div id="sprintNGroup" class="setting-item" style="display:none;"><label>衝刺頻率 (N)</label><input type="number" id="sprintN" value="3" min="1" style="width:45px"></div>
-                <div class="setting-item"><label>倒數秒數</label><input type="number" id="timerSec" value="15" min="3" style="width:45px"></div>
+                <div id="sprintNGroup" class="setting-item" style="display:none;"><label>頻率 (N)</label><input type="number" id="sprintN" value="3" min="1" style="width:45px"></div>
+                <div class="setting-item"><label>秒數</label><input type="number" id="timerSec" value="15" min="3" style="width:45px"></div>
             </div>
 
-            <button onclick="resetApp()" style="width:100%; padding:12px; background:var(--success); color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold;">應用設定並開始</button>
+            <button onclick="resetApp()" style="width:100%; padding:12px; background:#2ecc71; color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold;">應用設定並開始</button>
         </div>
 
         <div id="sprintAlert">⚡ 衝刺挑戰！</div>
@@ -143,12 +139,13 @@
             <details class="changelog">
                 <summary>📜 更新日誌 (Changelog)</summary>
                 <ul>
+                    <li><strong>v3.4.1</strong>: 修正音訊正確性：亂序播放與位移運算的音高現在會與視覺指令嚴格同步。</li>
+                    <li><strong>v3.4.0</strong>: 修正音訊邏輯：檢查答案時不再播音，避免提前聽到下一題題目。</li>
                     <li><strong>v3.3.9</strong>: 更名模式為「基礎」與「進階」，優化頁尾說明。</li>
-                    <li><strong>v3.3.8</strong>: 統一版本號，還原署名與日誌，整合邏輯重構功能。</li>
                     <li><strong>v3.3.7</strong>: 鍵盤一律採用鋼琴佈局，新增「鍵盤亂序」功能。</li>
                     <li><strong>v3.3.5</strong>: 修正計時器：按下「檢查答案」即時凍結視覺條。</li>
                     <li><strong>v3.3.1</strong>: 映射優化：第二環節自動打亂音符順序。</li>
-                    <li><strong>v3.3.0</strong>: 邏輯重構：映射模式與運算模式正式解耦。</li>
+                    <li><strong>v3.3.0</strong>: 邏輯重構：基礎(映射)與進階(運算)模式正式解耦。</li>
                 </ul>
             </details>
         </footer>
@@ -194,6 +191,19 @@
         document.getElementById("sprintNGroup").style.display = (tMode === 'sprint') ? 'flex' : 'none';
     }
 
+    // 核心優化：取得當前步驟應播放的正確音高索引
+    function getStepPitches() {
+        const mode = document.getElementById("trainMode").value;
+        const sid = MODE_STEPS[mode][state.stepIdx];
+        const j = state.currentJump;
+        switch(sid) {
+            case 10: case 11: case 1: return state.notes;
+            case 2: case 3: return state.notes.map(n => n + j);
+            case 4: case 5: return state.notes.map(n => n + j * 2);
+            default: return state.notes;
+        }
+    }
+
     function shouldBeSilent() {
         const mode = document.getElementById("trainMode").value;
         const sid = MODE_STEPS[mode][state.stepIdx];
@@ -225,17 +235,14 @@
         clearInterval(state.timerInt);
         const tMode = document.getElementById("timerMode").value;
         const cont = document.getElementById("timerCont");
-        const alertMsg = document.getElementById("sprintAlert");
-        if (tMode === 'off') { cont.style.display = "none"; alertMsg.style.display = "none"; return; }
-
+        if (tMode === 'off') { cont.style.display = "none"; return; }
         let isTimed = (tMode === 'always');
         if (tMode === 'sprint') {
             const n = parseInt(document.getElementById("sprintN").value);
             isTimed = (state.questionCounter > 0 && state.questionCounter % (n + 1) === 0);
         }
-        alertMsg.style.display = (isTimed && tMode === 'sprint') ? "block" : "none";
+        document.getElementById("sprintAlert").style.display = (isTimed && tMode === 'sprint') ? "block" : "none";
         if (!isTimed) { cont.style.display = "none"; return; }
-
         cont.style.display = "block";
         const bar = document.getElementById("timerBar");
         const sec = parseInt(document.getElementById("timerSec").value);
@@ -262,8 +269,12 @@
             if (state.stepIdx >= steps.length) {
                 generateNewTask();
             } else {
-                if (mode === 'mapping' && steps[state.stepIdx] === 11) state.notes.sort(() => Math.random() - 0.5);
-                renderStep(); playNotes(state.notes);
+                // 如果是基礎模式且進入亂序環節，先洗牌
+                if (mode === 'mapping' && steps[state.stepIdx] === 11) {
+                    state.notes.sort(() => Math.random() - 0.5);
+                }
+                renderStep(); 
+                playNotes(getStepPitches()); // 使用優化後的音高取得函式
             }
         }
     }
@@ -279,7 +290,8 @@
             if (pool.length === 0) pool = [0,1,2,3,4,5,6];
             state.notes.push(pool.splice(Math.floor(Math.random()*pool.length), 1)[0]);
         }
-        renderStep(); playNotes(state.notes);
+        renderStep(); 
+        playNotes(getStepPitches());
     }
 
     function renderStep() {
@@ -315,13 +327,13 @@
             bar.style.width = currentPxWidth;
         }
         const j = state.currentJump;
-        let correct = []; let soundArr = [];
-        if (stepId === 10) { correct = state.notes.map(n => solArr[n]); soundArr = [...state.notes]; }
-        else if (stepId === 11 || stepId === 1) { correct = state.notes.map(n => namArr[n]); soundArr = [...state.notes]; }
-        else if (stepId === 2) { correct = state.notes.map(n => namArr[(n+j)%7]); soundArr = state.notes.map(n => n+j); }
-        else if (stepId === 3) { correct = state.notes.map(n => solArr[(n+j)%7]); soundArr = state.notes.map(n => n+j); }
-        else if (stepId === 4) { correct = state.notes.map(n => solArr[(n+j*2)%7]); soundArr = state.notes.map(n => n+j*2); }
-        else if (stepId === 5) { correct = state.notes.map(n => namArr[(n+j*2)%7]); soundArr = state.notes.map(n => n+j*2); }
+        let correct = [];
+        if (stepId === 10) { correct = state.notes.map(n => solArr[n]); }
+        else if (stepId === 11 || stepId === 1) { correct = state.notes.map(n => namArr[n]); }
+        else if (stepId === 2) { correct = state.notes.map(n => namArr[(n+j)%7]); }
+        else if (stepId === 3) { correct = state.notes.map(n => solArr[(n+j)%7]); }
+        else if (stepId === 4) { correct = state.notes.map(n => solArr[(n+j*2)%7]); }
+        else if (stepId === 5) { correct = state.notes.map(n => namArr[(n+j*2)%7]); }
 
         state.notes.forEach((_, i) => {
             const slot = document.getElementById("slot" + i);
@@ -335,13 +347,11 @@
         document.getElementById("answerArea").innerText = "正解：" + correct.join(" ");
         document.getElementById("answerArea").style.visibility = "visible";
         document.getElementById("mainBtn").innerText = "下一步驟";
-        if (!shouldBeSilent()) playNotes(soundArr);
     }
 
     function renderKeyboard() {
         const kb = document.getElementById("keyboard");
-        const mode = document.getElementById("trainMode").value;
-        const sid = MODE_STEPS[mode][state.stepIdx];
+        const sid = MODE_STEPS[document.getElementById("trainMode").value][state.stepIdx];
         const isRandom = document.getElementById("kbRandom").checked;
         kb.innerHTML = "";
         const isSol = (sid === 10 || sid === 3 || sid === 4);
@@ -364,7 +374,7 @@
         });
     }
 
-    function handleReplay() { playNotes(state.notes); }
+    function handleReplay() { playNotes(getStepPitches()); }
 </script>
 </body>
 </html>
