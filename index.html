@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>橙色的樂理強化 v4.0.11</title>
+    <title>橙色的樂理強化 v4.0.12</title>
     <style>
         :root { --primary: #3498db; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; }
         body { font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: var(--bg); margin: 0; }
@@ -32,6 +32,9 @@
         
         .quiz-container { background: #f9f9f9; border-radius: 16px; padding: 15px; margin: 10px 0; border: 2px solid #eee; }
         .instruction { font-size: 1.1em; font-weight: 800; color: #7f8c8d; margin-bottom: 15px; }
+        .sprint-text { color: var(--error); animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
         .notes-display, .input-container { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; width: 100%; }
         .note-q-item { width: 45px; font-size: 1.8em; font-weight: bold; color: #2c3e50; text-align: center; cursor: pointer; }
         .input-slot { width: 45px; height: 45px; border-bottom: 3px solid #bdc3c7; font-size: 1.2em; font-weight: bold; display: flex; align-items: center; justify-content: center; }
@@ -64,7 +67,7 @@
         </div>
 
         <h1 class="app-title">橙色的樂理強化</h1>
-        <div class="version-tag">Version 4.0.11</div>
+        <div class="version-tag">Version 4.0.12</div>
         
         <div class="timer-group">
             <div id="sessionTimer" class="session-timer">Practice Time: 00:00</div>
@@ -75,7 +78,7 @@
             <span class="group-title">📚 樂理核心定義</span>
             <div class="concept-card"><b>1. 固定唱名</b>：C=Do, D=Re, E=Mi, F=Fa, G=Sol, A=La, B=Si。</div>
             <div class="concept-card" style="border-left-color: var(--success);"><b>2. 簡譜對照</b>：Do=1, Re=2, Mi=3, Fa=4, Sol=5, La=6, Si=7。</div>
-            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 移調練習</b>：支援 24 調性切換，大調大寫，小調小寫。</div>
+            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 隨機衝刺</b>：每一題都有機率觸發限時衝刺。</div>
             <span class="group-title">音名唱名簡譜對照表</span>
             <div id="refList"></div>
         </div>
@@ -134,7 +137,7 @@
                         <option value="sprint">隨機衝刺</option>
                     </select>
                 </div>
-                <div id="sprintNGroup" class="setting-item" style="display:none;"><label>衝刺頻率 (N)</label><input type="number" id="sprintN" value="3" min="1" style="width:45px"></div>
+                <div id="sprintNGroup" class="setting-item" style="display:none;"><label>衝刺頻率 (1/N)</label><input type="number" id="sprintN" value="3" min="1" style="width:45px"></div>
                 <div class="setting-item"><label>倒數秒數</label><input type="number" id="timerSec" value="30" min="3" style="width:45px"></div>
                 <div class="setting-item"><label>步驟間亂序</label><input type="checkbox" id="stepRandom" checked></div>
                 <div class="setting-item"><label>鍵盤亂序</label><input type="checkbox" id="kbRandom" onchange="renderKeyboard()"></div>
@@ -177,9 +180,9 @@
             <details class="changelog">
                 <summary>📜 更新日誌與工作紀錄</summary>
                 <ul>
-                    <li><strong>v4.0.11</strong>: 個人化優化：新增「Sol / So」顯示切換開關，全介面即時同步。</li>
-                    <li><strong>v4.0.10</strong>: 顯示優化：大小調標示邏輯更新（小調小寫）。</li>
-                    <li><strong>v4.0.9</strong>: 調性擴充：支援 24 個關係大小調。</li>
+                    <li><strong>v4.0.12</strong>: 衝刺進化：改為純機率隨機衝刺 (1/N)，並在觸發時顯示提示文字。</li>
+                    <li><strong>v4.0.11</strong>: 個人化：新增「Sol / So」標記切換。</li>
+                    <li><strong>v4.0.10</strong>: 顯示優化：小調根音改為小寫。</li>
                 </ul>
             </details>
         </footer>
@@ -189,63 +192,34 @@
     let solArr = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si"];
     const namArr = ["C", "D", "E", "F", "G", "A", "B"], 
           numArr = ["1", "2", "3", "4", "5", "6", "7"];
-    
-    const INTERVALS = {
-        major: [0, 2, 4, 5, 7, 9, 11],
-        minor: [0, 2, 3, 5, 7, 8, 10]
-    };
+    const INTERVALS = { major: [0, 2, 4, 5, 7, 9, 11], minor: [0, 2, 3, 5, 7, 8, 10] };
 
-    let state = { notes: [], userInputs: [], stepIdx: 0, isAnsMode: false, ctx: null, timerInt: null, sessionStartTime: null, sessionTimerInt: null, questionCounter: 0 };
+    let state = { notes: [], userInputs: [], stepIdx: 0, isAnsMode: false, ctx: null, timerInt: null, sessionStartTime: null, sessionTimerInt: null, questionCounter: 0, isCurrentSprint: false };
     
-    const MODE_STEPS = { 
-        map_ns: [10, 11], 
-        map_nn: [30, 31], 
-        map_sn: [40, 41], 
-        cycle: [50, 51, 52] 
-    };
+    const MODE_STEPS = { map_ns: [10, 11], map_nn: [30, 31], map_sn: [40, 41], cycle: [50, 51, 52] };
 
-    window.onload = () => {
-        renderRefList();
-        updateModeUI(); 
-        renderKeyboard(); 
-        updateStatusDisplay();
-    };
+    window.onload = () => { renderRefList(); updateModeUI(); renderKeyboard(); updateStatusDisplay(); };
 
     function updateSolType() {
         const isSo = document.getElementById("solTypeSo").checked;
         solArr[4] = isSo ? "So" : "Sol";
-        renderRefList();
-        renderKeyboard();
-        if (state.notes.length > 0) renderStep(); // 如果正在練習中，即時更新題目顯示
+        renderRefList(); renderKeyboard();
+        if (state.notes.length > 0) renderStep();
     }
 
     function renderRefList() {
-        const ref = document.getElementById("refList"); 
-        ref.innerHTML = "";
+        const ref = document.getElementById("refList"); ref.innerHTML = "";
         namArr.forEach((n, i) => { 
-            ref.innerHTML += `
-                <div class="ref-item" onclick="playSingle(${i})">
-                    <div class="ref-note-name">${n}</div>
-                    <div class="ref-sol-name">${solArr[i]}</div>
-                    <div class="ref-num-name">${numArr[i]}</div>
-                </div>`; 
+            ref.innerHTML += `<div class="ref-item" onclick="playSingle(${i})"><div class="ref-note-name">${n}</div><div class="ref-sol-name">${solArr[i]}</div><div class="ref-num-name">${numArr[i]}</div></div>`; 
         });
     }
 
     function updateStatusDisplay() {
-        const oct = document.getElementById("baseOctave");
-        const rootSelect = document.getElementById("baseRoot");
-        const mode = document.getElementById("baseMode");
-        const statusEl = document.getElementById("baseStatus");
-        
+        const oct = document.getElementById("baseOctave"), rootSelect = document.getElementById("baseRoot"), mode = document.getElementById("baseMode"), statusEl = document.getElementById("baseStatus");
         const isDefault = (oct.value === "0" && rootSelect.value === "0" && mode.value === "major");
-        
-        if (isDefault) {
-            statusEl.innerText = "";
-        } else {
-            const octText = oct.options[oct.selectedIndex].text;
-            let rootText = rootSelect.options[rootSelect.selectedIndex].text;
-            const modeVal = mode.value;
+        if (isDefault) statusEl.innerText = "";
+        else {
+            const octText = oct.options[oct.selectedIndex].text, rootText = rootSelect.options[rootSelect.selectedIndex].text, modeVal = mode.value;
             let formattedDisplay = (modeVal === "minor") ? (rootText.toLowerCase() + " 小調") : (rootText + " 大調");
             statusEl.innerText = `[ ${formattedDisplay} · ${octText} ]`;
         }
@@ -259,36 +233,21 @@
     function updateSessionTimer() {
         if (!state.sessionStartTime) return;
         const diff = Math.floor((Date.now() - state.sessionStartTime) / 1000);
-        const mm = String(Math.floor(diff / 60)).padStart(2, '0');
-        const ss = String(diff % 60).padStart(2, '0');
+        const mm = String(Math.floor(diff / 60)).padStart(2, '0'), ss = String(diff % 60).padStart(2, '0');
         document.getElementById("sessionTimer").innerText = `Practice Time: ${mm}:${ss}`;
     }
-    function ensureSessionTimer() {
-        if (!state.sessionStartTime) { state.sessionStartTime = Date.now(); state.sessionTimerInt = setInterval(updateSessionTimer, 1000); }
-    }
+    function ensureSessionTimer() { if (!state.sessionStartTime) { state.sessionStartTime = Date.now(); state.sessionTimerInt = setInterval(updateSessionTimer, 1000); } }
 
     function playNotes(targetIndices, force = false) {
         if (!force && !document.getElementById("playQuestSound").checked) return;
         if (!state.ctx) state.ctx = new AudioContext();
         if (state.ctx.state === 'suspended') state.ctx.resume();
-        
-        const now = state.ctx.currentTime, 
-              octShift = parseInt(document.getElementById("baseOctave").value),
-              rootOffset = parseInt(document.getElementById("baseRoot").value),
-              mode = document.getElementById("baseMode").value;
-
+        const now = state.ctx.currentTime, octShift = parseInt(document.getElementById("baseOctave").value), rootOffset = parseInt(document.getElementById("baseRoot").value), mode = document.getElementById("baseMode").value;
         targetIndices.forEach((idx, i) => {
             const osc = state.ctx.createOscillator(), gain = state.ctx.createGain();
-            const degree = ((idx % 7) + 7) % 7;
-            const octaveOffset = Math.floor(idx / 7) + octShift;
-            const semitones = rootOffset + INTERVALS[mode][degree] + (octaveOffset * 12);
-            const freq = 261.63 * Math.pow(2, semitones / 12);
-            osc.frequency.setValueAtTime(freq, now + i * 0.4);
-            gain.gain.setValueAtTime(0, now + i * 0.4); 
-            gain.gain.linearRampToValueAtTime(0.1, now + i * 0.4 + 0.01); 
-            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.4 + 0.5);
-            osc.connect(gain); gain.connect(state.ctx.destination); 
-            osc.start(now + i * 0.4); osc.stop(now + i * 0.4 + 0.6);
+            const degree = ((idx % 7) + 7) % 7, octaveOffset = Math.floor(idx / 7) + octShift, semitones = rootOffset + INTERVALS[mode][degree] + (octaveOffset * 12), freq = 261.63 * Math.pow(2, semitones / 12);
+            osc.frequency.setValueAtTime(freq, now + i * 0.4); gain.gain.setValueAtTime(0, now + i * 0.4); gain.gain.linearRampToValueAtTime(0.1, now + i * 0.4 + 0.01); gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.4 + 0.5);
+            osc.connect(gain); gain.connect(state.ctx.destination); osc.start(now + i * 0.4); osc.stop(now + i * 0.4 + 0.6);
         });
     }
 
@@ -298,109 +257,81 @@
         ensureSessionTimer(); 
         const mode = document.getElementById("trainMode").value, steps = MODE_STEPS[mode];
         if (state.notes.length === 0) { generateNewTask(); return; }
-        
         if (!state.isAnsMode) {
             state.isAnsMode = true; clearInterval(state.timerInt);
             const bar = document.getElementById("timerBar"); if (bar) { bar.style.transition = 'none'; bar.style.width = window.getComputedStyle(bar).width; }
-            
-            const sid = steps[state.stepIdx]; 
-            let correct = [];
+            const sid = steps[state.stepIdx]; let correct = [];
             switch(sid) {
                 case 10: correct = state.notes.map(n => solArr[n]); break;
                 case 11: case 31: case 52: correct = state.notes.map(n => namArr[n]); break;
                 case 30: case 40: case 50: correct = state.notes.map(n => numArr[n]); break;
                 case 41: case 51: correct = state.notes.map(n => solArr[n]); break;
             }
-
             state.notes.forEach((_, i) => { 
                 const s = document.getElementById("slot" + i); 
                 if (state.userInputs[i] === correct[i]) s.classList.add("slot-correct"); 
                 else { 
-                    s.classList.add("slot-wrong"); 
-                    s.innerText = state.userInputs[i] || "X"; 
-                    const keys = document.querySelectorAll('.key'); 
-                    keys.forEach(k => { if(k.innerText === correct[i]) { k.classList.add('hint-correct'); setTimeout(()=>k.classList.remove('hint-correct'), 800); }}); 
+                    s.classList.add("slot-wrong"); s.innerText = state.userInputs[i] || "X"; 
+                    const keys = document.querySelectorAll('.key'); keys.forEach(k => { if(k.innerText === correct[i]) { k.classList.add('hint-correct'); setTimeout(()=>k.classList.remove('hint-correct'), 800); }}); 
                 }
             });
-
             if (document.getElementById("playCorrectSound").checked) playNotes(state.notes, true);
             document.getElementById("answerArea").innerText = "正解：" + correct.join(" "); 
-            document.getElementById("answerArea").style.visibility = "visible"; 
-            document.getElementById("mainBtn").innerText = "下一步驟";
+            document.getElementById("answerArea").style.visibility = "visible"; document.getElementById("mainBtn").innerText = "下一步驟";
         } else {
-            state.stepIdx++; 
-            if (state.stepIdx >= steps.length) {
-                generateNewTask(); 
-            } else { 
-                if (document.getElementById("stepRandom").checked) state.notes.sort(() => Math.random() - 0.5); 
-                renderStep(); 
-                playNotes(state.notes); 
-            }
+            state.stepIdx++; if (state.stepIdx >= steps.length) generateNewTask(); 
+            else { if (document.getElementById("stepRandom").checked) state.notes.sort(() => Math.random() - 0.5); renderStep(); playNotes(state.notes); }
         }
     }
 
     function generateNewTask() {
         state.stepIdx = 0; state.questionCounter++; state.isAnsMode = false;
-        const count = parseInt(document.getElementById("noteCount").value) || 4; 
-        state.notes = []; 
-        let pool = [0,1,2,3,4,5,6];
-        for(let i=0; i<count; i++) {
-            if (pool.length === 0) pool = [0,1,2,3,4,5,6];
-            state.notes.push(pool.splice(Math.floor(Math.random()*pool.length), 1)[0]);
-        }
+        const n = parseInt(document.getElementById("sprintN").value);
+        // v4.0.12: 每一大題開始時決定這題是否為衝刺題 (1/N 機率)
+        state.isCurrentSprint = (Math.random() < (1 / n));
+        const count = parseInt(document.getElementById("noteCount").value) || 4; state.notes = []; let pool = [0,1,2,3,4,5,6];
+        for(let i=0; i<count; i++) { if (pool.length === 0) pool = [0,1,2,3,4,5,6]; state.notes.push(pool.splice(Math.floor(Math.random()*pool.length), 1)[0]); }
         renderStep(); playNotes(state.notes);
     }
 
     function renderStep() {
         const mode = document.getElementById("trainMode").value, sid = MODE_STEPS[mode][state.stepIdx];
-        state.isAnsMode = false; state.userInputs = []; 
-        const sCont = document.getElementById("slotContainer");
-        const qArea = document.getElementById("questionArea");
-        
-        document.getElementById("answerArea").style.visibility = "hidden"; 
-        sCont.innerHTML = "";
-        qArea.innerHTML = "";
-
+        state.isAnsMode = false; state.userInputs = []; const sCont = document.getElementById("slotContainer"), qArea = document.getElementById("questionArea");
+        document.getElementById("answerArea").style.visibility = "hidden"; sCont.innerHTML = ""; qArea.innerHTML = "";
         state.notes.forEach((nIdx, i) => {
-            const q = document.createElement("div");
-            q.className = "note-q-item";
-            q.onclick = () => playSingle(nIdx);
+            const q = document.createElement("div"); q.className = "note-q-item"; q.onclick = () => playSingle(nIdx);
             let qText = "";
             switch(sid) {
                 case 10: case 30: case 50: qText = namArr[nIdx]; break;
                 case 11: case 40: case 52: qText = solArr[nIdx]; break;
                 case 31: case 41: case 51: qText = numArr[nIdx]; break;
             }
-            q.innerText = qText;
-            qArea.appendChild(q);
-
-            const s = document.createElement("div");
-            s.className = "input-slot";
-            s.id = "slot" + i;
-            sCont.appendChild(s);
+            q.innerText = qText; qArea.appendChild(q);
+            const s = document.createElement("div"); s.className = "input-slot"; s.id = "slot" + i; sCont.appendChild(s);
         });
-        
         const inst = document.getElementById("instruction");
+        let instText = "";
         switch(sid) {
-            case 10: inst.innerText = "音名 ➔ 唱名"; break;
-            case 11: inst.innerText = "唱名 ➔ 音名"; break;
-            case 30: inst.innerText = "音名 ➔ 簡譜"; break;
-            case 31: inst.innerText = "簡譜 ➔ 音名"; break;
-            case 40: inst.innerText = "唱名 ➔ 簡譜"; break;
-            case 41: inst.innerText = "簡譜 ➔ 唱名"; break;
-            case 50: inst.innerText = "音名 ➔ 簡譜"; break;
-            case 51: inst.innerText = "簡譜 ➔ 唱名"; break;
-            case 52: inst.innerText = "唱名 ➔ 音名"; break;
+            case 10: instText = "音名 ➔ 唱名"; break;
+            case 11: instText = "唱名 ➔ 音名"; break;
+            case 30: instText = "音名 ➔ 簡譜"; break;
+            case 31: instText = "簡譜 ➔ 音名"; break;
+            case 40: instText = "唱名 ➔ 簡譜"; break;
+            case 41: instText = "簡譜 ➔ 唱名"; break;
+            case 50: instText = "音名 ➔ 簡譜"; break;
+            case 51: instText = "簡譜 ➔ 唱名"; break;
+            case 52: instText = "唱名 ➔ 音名"; break;
         }
+        // 顯示隨機衝刺提示
+        const isSprintActive = (document.getElementById("timerMode").value === 'sprint' && state.isCurrentSprint);
+        inst.innerHTML = instText + (isSprintActive ? ' <span class="sprint-text">🔥 隨機衝刺！</span>' : '');
         renderKeyboard(); startTimer(); document.getElementById("mainBtn").innerText = "檢查答案";
     }
 
     function startTimer() {
-        clearInterval(state.timerInt); const mode = document.getElementById("timerMode").value;
-        const bar = document.getElementById("timerBar"), cont = document.getElementById("timerBarCont");
+        clearInterval(state.timerInt); const mode = document.getElementById("timerMode").value, bar = document.getElementById("timerBar"), cont = document.getElementById("timerBarCont");
         if (mode === 'off') { cont.style.display = "none"; return; }
-        let isTimed = (mode === 'always');
-        if (mode === 'sprint') { const n = parseInt(document.getElementById("sprintN").value); isTimed = (state.questionCounter > 0 && state.questionCounter % (n + 1) === 0); }
+        let isTimed = (mode === 'always') || (mode === 'sprint' && state.isCurrentSprint);
         if (!isTimed) { cont.style.display = "none"; return; }
         bar.style.transition = "none"; bar.style.width = "100%"; cont.style.display = "block";
         const sec = parseInt(document.getElementById("timerSec").value);
@@ -410,30 +341,20 @@
 
     function renderKeyboard() {
         const kb = document.getElementById("keyboard"), mode = document.getElementById("trainMode").value, sid = MODE_STEPS[mode][state.stepIdx];
-        kb.innerHTML = "";
-        const isSol = (sid === 10 || sid === 41 || sid === 51);
-        const isNum = (sid === 30 || sid === 40 || sid === 50);
+        kb.innerHTML = ""; const isSol = (sid === 10 || sid === 41 || sid === 51), isNum = (sid === 30 || sid === 40 || sid === 50);
         let keys = [...(isSol ? solArr : (isNum ? numArr : namArr))];
         if (document.getElementById("kbRandom").checked) keys.sort(() => Math.random() - 0.5);
         keys.forEach(kText => { 
-            const k = document.createElement("div"); 
-            k.className = "key"; 
-            k.innerText = kText; 
+            const k = document.createElement("div"); k.className = "key"; k.innerText = kText; 
             k.onclick = () => { 
                 if (!state.isAnsMode && state.userInputs.length < state.notes.length) { 
-                    state.userInputs.push(kText); 
-                    updateSlots();
-                    if (document.getElementById("playAnsSound").checked) {
-                        let idx = isSol ? solArr.indexOf(kText) : (isNum ? numArr.indexOf(kText) : namArr.indexOf(kText));
-                        playSingle(idx);
-                    }
+                    state.userInputs.push(kText); updateSlots();
+                    if (document.getElementById("playAnsSound").checked) { let idx = isSol ? solArr.indexOf(kText) : (isNum ? numArr.indexOf(kText) : namArr.indexOf(kText)); playSingle(idx); }
                 }
-            }; 
-            kb.appendChild(k); 
+            }; kb.appendChild(k); 
         });
         const del = document.createElement("div"); del.className = "key control"; del.innerText = "⌫"; del.onclick = () => { if(!state.isAnsMode) { state.userInputs.pop(); updateSlots(); }}; kb.appendChild(del);
     }
-
     function updateSlots() { state.notes.forEach((_, i) => { document.getElementById("slot" + i).innerText = state.userInputs[i] || ""; }); }
     function handleReplay() { playNotes(state.notes, true); }
     function playSingle(i) { playNotes([i], true); }
