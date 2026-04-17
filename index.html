@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>橙色的樂理強化 v4.2.1</title>
+    <title>橙色的樂理強化 v4.2.5</title>
     <style>
         :root { --primary: #3498db; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; }
         body { font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: var(--bg); margin: 0; min-height: 100vh; overflow-x: hidden; }
@@ -26,11 +26,17 @@
         .group-title { font-weight: 800; color: var(--primary); display: block; margin-bottom: 8px; font-size: 1.1em; }
         .setting-item { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; }
         
-        /* 級數選擇器 */
         .degree-picker { display: flex; justify-content: space-between; gap: 4px; margin-top: 5px; width: 100%; flex-wrap: wrap; }
         .deg-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; color: #95a5a6; transition: 0.2s; font-size: 0.85em; background: #fff; }
         .deg-btn.active { border-color: var(--success); color: #fff; background: var(--success); box-shadow: 0 2px 5px rgba(46, 204, 113, 0.3); }
 
+        #refList { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; gap: 4px; overflow-x: auto; }
+        .ref-item { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 42px; background: #fff; padding: 8px 2px; border-radius: 10px; border: 1px solid #eee; }
+        .ref-note-name { font-weight: bold; color: var(--primary); font-size: 1.1em; }
+        .ref-sol-name { font-weight: 800; color: #2c3e50; font-size: 0.95em; }
+        .ref-num-name { font-weight: bold; color: #e67e22; font-size: 0.9em; }
+
+        .concept-card { background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--primary); font-size: 0.95em; line-height: 1.4; }
         .timer-bar-container { width: 100%; height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-bottom: 10px; display: none; }
         #timerBar { height: 100%; background: var(--error); width: 100%; transition: width linear; }
         
@@ -60,6 +66,7 @@
         
         .footer { margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px; color: #95a5a6; font-size: 0.8em; text-align: center; }
         .changelog { margin-top: 10px; text-align: left; background: #f9f9f9; padding: 12px; border-radius: 10px; font-size: 0.85em; border: 1px solid #eee; }
+        .changelog summary { cursor: pointer; color: #7f8c8d; font-weight: bold; margin-bottom: 5px; outline: none; }
     </style>
 </head>
 <body>
@@ -74,7 +81,7 @@
         </div>
 
         <h1 class="app-title">橙色的樂理強化</h1>
-        <div class="version-tag">Version 4.2.1</div>
+        <div class="version-tag" style="color:#95a5a6; font-size:0.7em; font-family:monospace; margin-bottom:5px;">Version 4.2.5</div>
         
         <div class="timer-group">
             <div id="sessionTimer" class="session-timer">Practice Time: 00:00</div>
@@ -82,20 +89,24 @@
         </div>
 
         <div id="pianoPanel" class="info-panel">
-            <span class="group-title">📚 樂理參考</span>
-            <div id="refList" style="display:flex; justify-content:space-between; margin-top:5px; text-align:center;"></div>
+            <span class="group-title">📚 樂理核心定義</span>
+            <div class="concept-card"><b>1. 固定唱名</b>：C=Do, D=Re, E=Mi, F=Fa, G=Sol, A=La, B=Si。</div>
+            <div class="concept-card" style="border-left-color: var(--success);"><b>2. 簡譜對照</b>：Do=1, Re=2, Mi=3, Fa=4, Sol=5, La=6, Si=7。</div>
+            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 三向循環</b>：音名 ➔ 簡譜 ➔ 唱名 ➔ 音名。這是一個完整的閉環反應練習。</div>
+            <span class="group-title">音名唱名簡譜對照表</span>
+            <div id="refList"></div>
         </div>
 
         <div id="settingsPanel" class="info-panel">
             <div class="setting-group">
                 <span class="group-title">核心訓練</span>
                 <div class="setting-item">
-                    <label>訓練模式</label>
+                    <label>模式</label>
                     <select id="trainMode" onchange="updateModeUI()">
-                        <option value="map_ns" selected>音名 ↔ 唱名</option>
-                        <option value="map_nn">音名 ↔ 簡譜</option>
-                        <option value="map_sn">唱名 ↔ 簡譜</option>
-                        <option value="cycle">三向循環</option>
+                        <option value="map_ns" selected>音名 ↔ 唱名轉換</option>
+                        <option value="map_nn">音名 ↔ 簡譜轉換</option>
+                        <option value="map_sn">唱名 ↔ 簡譜轉換</option>
+                        <option value="cycle">三向循環邏輯鏈</option>
                     </select>
                 </div>
                 <div class="setting-item">
@@ -115,13 +126,19 @@
                         <div class="deg-btn active" id="deg4" onclick="this.classList.toggle('active')">5</div>
                         <div class="deg-btn active" id="deg5" onclick="this.classList.toggle('active')">6</div>
                         <div class="deg-btn active" id="deg6" onclick="this.classList.toggle('active')">7</div>
-                        <div class="deg-btn active" id="deg7" onclick="this.classList.toggle('active')">1(高)</div>
+                        <div class="deg-btn" id="deg7" onclick="this.classList.toggle('active')">1(高)</div>
                     </div>
                 </div>
                 <div class="setting-item"><label>音符數量</label><input type="number" id="noteCount" value="4" min="1" max="14" style="width:45px"></div>
-                <div class="setting-item"><label>基準調性</label>
+                <div class="setting-item"><label>基準根音</label>
                     <select id="baseRoot" onchange="updateStatusDisplay()">
                         <option value="0" selected>C</option><option value="2">D</option><option value="4">E</option><option value="5">F</option><option value="7">G</option><option value="9">A</option><option value="11">B</option>
+                    </select>
+                </div>
+                <div class="setting-item"><label>基準調性</label>
+                    <select id="baseMode" onchange="updateStatusDisplay()">
+                        <option value="major" selected>大調 (Major)</option>
+                        <option value="minor">自然小調 (Natural Minor)</option>
                     </select>
                 </div>
             </div>
@@ -134,9 +151,13 @@
                     </select>
                 </div>
                 <div id="sprintNGroup" class="setting-item" style="display:none;"><label>衝刺頻率 (1/N)</label><input type="number" id="sprintN" value="3" min="1" style="width:45px"></div>
-                <div class="setting-item"><label>倒數秒數</label><input type="number" id="timerSec" value="10" min="3" style="width:45px"></div>
+                <div class="setting-item"><label>倒數秒數</label><input type="number" id="timerSec" value="30" min="3" style="width:45px"></div>
                 <div class="setting-item"><label>鍵盤亂序</label><input type="checkbox" id="kbRandom" onchange="renderKeyboard()"></div>
+                
+                <div class="setting-item"><label>題目播放聲音</label><input type="checkbox" id="playQuestSound"></div>
                 <div class="setting-item"><label>作答播放聲音</label><input type="checkbox" id="playAnsSound" checked></div>
+                <div class="setting-item"><label>正解播放聲音</label><input type="checkbox" id="playCorrectSound" checked></div>
+                
                 <div class="setting-item"><label>唱名(5) 標記</label>
                     <div style="display: flex; gap: 10px;">
                         <input type="radio" name="solType" id="solTypeSol" checked onchange="updateSolType()"> <label for="solTypeSol">Sol</label>
@@ -163,12 +184,11 @@
         <footer class="footer">
             <p>Made with ❤️ by <strong>EtOH58daidai</strong> & <strong>Gemini</strong></p>
             <details class="changelog">
-                <summary>📜 更新日誌 v4.2.1</summary>
+                <summary>📜 更新日誌 v4.2.5</summary>
                 <ul>
-                    <li>完全基於 v4.1.2 穩定版重構。</li>
-                    <li>新增「鍵盤排列模式」切換：鋼琴(1x7) 與 口琴實體(4x2)。</li>
-                    <li>口琴排列上排 CEGC，下排 DFAB；最後一格為 C5 高音。</li>
-                    <li>級數過濾器全天候開啟，支援 1~7 及 高音 1。</li>
+                    <li><strong>v4.2.5</strong>: 移除自然小調文字說明卡片，級數過濾器預設改為 1~7 級音（高音 1 預設關閉）。</li>
+                    <li><strong>v4.2.4</strong>: 全功能稽核定版。對照 v4.1.2 恢復 UI 與狀態顯示。</li>
+                    <li><strong>v4.2.3</strong>: 實裝口琴排列 (CEGC/DFAB) 與高音 C5 音頻。</li>
                 </ul>
             </details>
         </footer>
@@ -176,8 +196,7 @@
 
 <script>
     let solArr = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si", "Do"];
-    const namArr = ["C", "D", "E", "F", "G", "A", "B", "C"];
-    const numArr = ["1", "2", "3", "4", "5", "6", "7", "1"];
+    const namArr = ["C", "D", "E", "F", "G", "A", "B", "C"], numArr = ["1", "2", "3", "4", "5", "6", "7", "1"];
     const INTERVALS = [0, 2, 4, 5, 7, 9, 11, 12];
     const HARM_INDEX_MAP = [0, 2, 4, 7, 1, 3, 5, 6]; 
 
@@ -188,9 +207,7 @@
 
     function getSelectedPool() {
         let pool = [];
-        for (let i = 0; i < 8; i++) {
-            if (document.getElementById(`deg${i}`).classList.contains('active')) pool.push(i);
-        }
+        for (let i = 0; i < 8; i++) { if (document.getElementById(`deg${i}`).classList.contains('active')) pool.push(i); }
         return pool.length > 0 ? pool : [0, 1, 2, 3, 4, 5, 6, 7];
     }
 
@@ -207,20 +224,22 @@
 
     function updateSolType() {
         solArr[4] = document.getElementById("solTypeSo").checked ? "So" : "Sol";
-        solArr[7] = solArr[0]; 
-        renderRefList(); renderKeyboard();
+        solArr[7] = solArr[0]; renderRefList(); renderKeyboard();
         if (state.notes.length > 0) renderStep();
     }
 
     function renderRefList() {
         const ref = document.getElementById("refList"); if (!ref) return;
         ref.innerHTML = "";
-        for(let i=0; i<7; i++) { ref.innerHTML += `<div style="font-size:0.8em"><b>${namArr[i]}</b><br>${solArr[i]}</div>`; }
+        for(let i=0; i<7; i++) {
+            ref.innerHTML += `<div class="ref-item"><div class="ref-note-name">${namArr[i]}</div><div class="ref-sol-name">${solArr[i]}</div><div class="ref-num-name">${numArr[i]}</div></div>`; 
+        }
     }
 
     function updateStatusDisplay() {
-        const rootSelect = document.getElementById("baseRoot"), statusEl = document.getElementById("baseStatus");
-        statusEl.innerText = `[ ${rootSelect.options[rootSelect.selectedIndex].text} 大調 · 標準音域 ]`;
+        const rootSelect = document.getElementById("baseRoot"), mode = document.getElementById("baseMode"), statusEl = document.getElementById("baseStatus");
+        const rootText = rootSelect.options[rootSelect.selectedIndex].text, modeVal = mode.value;
+        statusEl.innerText = `[ ${rootText} ${modeVal === "minor" ? '自然小調' : '大調'} · 標準 (C4) ]`;
     }
 
     function togglePanel(id) { const p = document.getElementById(id); const isShow = (p.style.display === "block"); document.querySelectorAll('.info-panel').forEach(el => el.style.display = 'none'); p.style.display = isShow ? 'none' : 'block'; }
@@ -228,8 +247,10 @@
     function updateModeUI() { 
         document.getElementById("sprintNGroup").style.display = (document.getElementById("timerMode").value === 'sprint') ? 'flex' : 'none';
         if (state.notes.length === 0) {
-            const modeSelect = document.getElementById("trainMode");
-            document.getElementById("instruction").innerHTML = `點擊下方綠色按鈕開始<br><span class="mode-hint">目前模式：${modeSelect.options[modeSelect.selectedIndex].text}</span>`;
+            const modeName = document.getElementById("trainMode").options[document.getElementById("trainMode").selectedIndex].text;
+            document.getElementById("instruction").innerHTML = `點擊下方綠色按鈕開始<br><span class="mode-hint">目前模式：${modeName}</span>`;
+            document.getElementById("questionArea").innerHTML = ""; document.getElementById("slotContainer").innerHTML = "";
+            document.getElementById("mainBtn").innerText = "開始練習";
         }
         renderKeyboard();
     }
@@ -257,7 +278,10 @@
         } 
     }
 
-    function playNotes(targetIndices) {
+    function playNotes(targetIndices, forceType = null) {
+        if (forceType === 'quest' && !document.getElementById("playQuestSound").checked) return;
+        if (forceType === 'ans' && !document.getElementById("playAnsSound").checked) return;
+        if (forceType === 'correct' && !document.getElementById("playCorrectSound").checked) return;
         if (!state.ctx) state.ctx = new AudioContext();
         if (state.ctx.state === 'suspended') state.ctx.resume();
         const now = state.ctx.currentTime, rootOffset = parseInt(document.getElementById("baseRoot").value);
@@ -271,7 +295,7 @@
     }
 
     function handleClick() {
-        ensureSessionTimer(); const steps = MODE_STEPS[document.getElementById("trainMode").value];
+        ensureSessionTimer(); const mode = document.getElementById("trainMode").value, steps = MODE_STEPS[mode];
         if (state.notes.length === 0) { generateNewTask(); return; }
         if (!state.isAnsMode) {
             state.isAnsMode = true; clearInterval(state.timerInt);
@@ -283,9 +307,12 @@
             state.notes.forEach((_, i) => { 
                 const s = document.getElementById("slot" + i); 
                 if (state.userInputs[i] === correct[i]) s.classList.add("slot-correct"); 
-                else { s.classList.add("slot-wrong"); s.innerText = state.userInputs[i] || "X"; }
+                else { 
+                    s.classList.add("slot-wrong"); s.innerText = state.userInputs[i] || "X"; 
+                    const keys = document.querySelectorAll('.key'); keys.forEach(k => { if(k.innerText === correct[i]) { k.classList.add('hint-correct'); setTimeout(()=>k.classList.remove('hint-correct'), 800); }}); 
+                }
             });
-            playNotes(state.notes);
+            playNotes(state.notes, 'correct');
             document.getElementById("answerArea").innerText = "正解：" + correct.join(" "); 
             document.getElementById("answerArea").style.visibility = "visible"; document.getElementById("mainBtn").innerText = "下一步驟";
         } else {
@@ -309,12 +336,13 @@
         document.getElementById("answerArea").style.visibility = "hidden"; sCont.innerHTML = ""; qArea.innerHTML = "";
         state.notes.forEach((nIdx, i) => {
             const qText = (sid%10 === 0) ? namArr[nIdx] : (sid%10 === 1 ? solArr[nIdx] : numArr[nIdx]);
-            qArea.innerHTML += `<div class="note-q-item" onclick="playNotes([${nIdx}])">${qText}</div>`;
+            qArea.innerHTML += `<div class="note-q-item" onclick="playNotes([${nIdx}], 'ans')">${qText}</div>`;
             sCont.innerHTML += `<div class="input-slot" id="slot${i}"></div>`;
         });
         const isSprintActive = (document.getElementById("timerMode").value === 'sprint' && state.isCurrentSprint);
         document.getElementById("instruction").innerHTML = "樂理轉換練習" + (isSprintActive ? ' <br><span class="sprint-text">🔥 隨機衝刺！</span>' : '');
         renderKeyboard(); startTimer(); document.getElementById("mainBtn").innerText = "檢查答案";
+        playNotes(state.notes, 'quest');
     }
 
     function startTimer() {
@@ -331,36 +359,26 @@
         const sid = MODE_STEPS[document.getElementById("trainMode").value][state.stepIdx];
         const isSol = (sid === 10 || sid === 41 || sid === 51), isNum = (sid === 30 || sid === 40 || sid === 50);
         const pool = getSelectedPool();
-        
         kb.innerHTML = ""; kb.className = layout === 'harmonica' ? "keyboard kb-harmonica" : "keyboard kb-standard";
-        
         let keys = [];
         if (layout === 'harmonica') {
             HARM_INDEX_MAP.forEach(idx => {
                 if (pool.includes(idx)) keys.push({ text: isSol ? solArr[idx] : (isNum ? numArr[idx] : namArr[idx]), idx: idx });
-                else keys.push({ text: "", idx: -1 }); // 空位維持結構
+                else keys.push({ text: "", idx: -1 }); 
             });
         } else {
-            for(let i=0; i<7; i++) {
-                if (pool.includes(i)) keys.push({ text: isSol ? solArr[i] : (isNum ? numArr[i] : namArr[i]), idx: i });
-            }
+            for(let i=0; i<8; i++) { if (pool.includes(i)) keys.push({ text: isSol ? solArr[i] : (isNum ? numArr[i] : namArr[i]), idx: i }); }
             if (document.getElementById("kbRandom").checked) keys.sort(() => Math.random() - 0.5);
         }
-
         keys.forEach(kObj => { 
             const k = document.createElement("div"); k.className = "key"; k.innerText = kObj.text; 
             if (kObj.idx === -1) k.style.visibility = "hidden";
-            k.onclick = () => { 
-                if (!state.isAnsMode && kObj.idx !== -1 && state.userInputs.length < state.notes.length) { 
-                    state.userInputs.push(kObj.text); 
-                    state.notes.forEach((_, i) => document.getElementById("slot" + i).innerText = state.userInputs[i] || "");
-                    if (document.getElementById("playAnsSound").checked) playNotes([kObj.idx]);
-                }
-            }; kb.appendChild(k); 
+            k.onclick = () => { if (!state.isAnsMode && kObj.idx !== -1 && state.userInputs.length < state.notes.length) { state.userInputs.push(kObj.text); state.notes.forEach((_, i) => document.getElementById("slot" + i).innerText = state.userInputs[i] || ""); playNotes([kObj.idx], 'ans'); }};
+            kb.appendChild(k); 
         });
         const del = document.createElement("div"); del.className = "key control"; del.innerText = "⌫"; del.onclick = () => { if(!state.isAnsMode) { state.userInputs.pop(); state.notes.forEach((_, i) => document.getElementById("slot" + i).innerText = state.userInputs[i] || ""); }}; kb.appendChild(del);
     }
-    function handleReplay() { playNotes(state.notes); }
+    function handleReplay() { playNotes(state.notes, 'correct'); }
 </script>
 </body>
 </html>
