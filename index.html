@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>橙色的樂理強化 v3.5.11</title>
+    <title>橙色的樂理強化 v4.0.4</title>
     <style>
         :root { --primary: #3498db; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; }
         body { font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: var(--bg); margin: 0; }
@@ -20,7 +20,8 @@
         #refList { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; gap: 4px; overflow-x: auto; }
         .ref-item { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 42px; background: #fff; padding: 8px 2px; border-radius: 10px; border: 1px solid #eee; cursor: pointer; }
         .ref-note-name { font-weight: bold; color: var(--primary); font-size: 1.1em; }
-        .ref-sol-name { font-weight: 800; color: #2c3e50; }
+        .ref-sol-name { font-weight: 800; color: #2c3e50; font-size: 0.95em; }
+        .ref-num-name { font-weight: bold; color: #e67e22; font-size: 0.9em; }
         .concept-card { background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--primary); font-size: 0.95em; line-height: 1.4; }
         .timer-bar-container { width: 100%; height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-bottom: 10px; display: none; }
         #timerBar { height: 100%; background: var(--error); width: 100%; transition: width linear; }
@@ -54,15 +55,15 @@
         </div>
 
         <h1 class="app-title">橙色的樂理強化</h1>
-        <div class="version-tag">Version 3.5.11</div>
+        <div class="version-tag">Version 4.0.4</div>
         <div id="sessionTimer" class="session-timer">Practice Time: 00:00</div>
 
         <div id="pianoPanel" class="info-panel">
             <span class="group-title">📚 樂理核心定義</span>
-            <div class="concept-card"><b>1. 固定唱名</b>：C=Do, D=Re, E=Mi, F=Fa, G=So, A=La, B=Si。</div>
-            <div class="concept-card" style="border-left-color: var(--success);"><b>2. 音級位移</b>：在自然音階 1-7 中循環移動。+1 代表移動到下一個音級。</div>
-            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 累積邏輯</b>：綜合模式中位移會累積。Step 5 最終位移為原始音 +2。</div>
-            <span class="group-title">快速映射對照</span>
+            <div class="concept-card"><b>1. 固定唱名</b>：C=Do, D=Re, E=Mi, F=Fa, G=Sol, A=La, B=Si。</div>
+            <div class="concept-card" style="border-left-color: var(--success);"><b>2. 簡譜對照</b>：Do=1, Re=2, Mi=3, Fa=4, Sol=5, La=6, Si=7。</div>
+            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 三向循環</b>：音名 ➔ 簡譜 ➔ 唱名 ➔ 音名。這是一個完整的閉環練習。</div>
+            <span class="group-title">音名唱名簡譜對照表</span>
             <div id="refList"></div>
         </div>
 
@@ -72,9 +73,10 @@
                 <div class="setting-item">
                     <label>模式</label>
                     <select id="trainMode" onchange="updateModeUI()">
-                        <option value="mapping" selected>基礎 (純音唱映射)</option>
-                        <option value="displacement">運算 (純音程位移)</option>
-                        <option value="comprehensive">綜合 (連鎖邏輯)</option>
+                        <option value="map_ns" selected>音名 ↔ 唱名轉換</option>
+                        <option value="map_nn">音名 ↔ 簡譜轉換</option>
+                        <option value="map_sn">唱名 ↔ 簡譜轉換</option>
+                        <option value="cycle">三向循環邏輯鏈</option>
                     </select>
                 </div>
                 <div class="setting-item"><label>音符數量</label><input type="number" id="noteCount" value="4" min="1" max="14" style="width:45px"></div>
@@ -83,14 +85,7 @@
                     <select id="baseOctave"><option value="-1">低八度</option><option value="0" selected>標準 (C4)</option><option value="1">高八度</option></select>
                 </div>
             </div>
-            <div id="jumpSettings" class="setting-group" style="display:none;">
-                <span class="group-title">運算參數</span>
-                <div class="setting-item"><label>位移格數</label><input type="number" id="jumpVal" value="1" min="1" max="6" style="width:45px"></div>
-                <div class="setting-item">
-                    <label>格數模式</label>
-                    <select id="jumpMode"><option value="fixed" selected>固定</option><option value="random">隨機</option></select>
-                </div>
-            </div>
+            
             <div class="setting-group">
                 <span class="group-title">計時與強度</span>
                 <div class="setting-item">
@@ -103,6 +98,7 @@
                 </div>
                 <div id="sprintNGroup" class="setting-item" style="display:none;"><label>衝刺頻率 (N)</label><input type="number" id="sprintN" value="3" min="1" style="width:45px"></div>
                 <div class="setting-item"><label>倒數秒數</label><input type="number" id="timerSec" value="30" min="3" style="width:45px"></div>
+                <div class="setting-item"><label>步驟間亂序</label><input type="checkbox" id="stepRandom" checked></div>
                 <div class="setting-item"><label>鍵盤亂序</label><input type="checkbox" id="kbRandom" onchange="renderKeyboard()"></div>
             </div>
             <button onclick="resetApp()" style="width:100%; padding:12px; background:var(--success); color:white; border:none; border-radius:10px; font-weight:bold;">啟動訓練</button>
@@ -125,33 +121,49 @@
             <details class="changelog">
                 <summary>📜 更新日誌與工作紀錄</summary>
                 <ul>
-                    <li><strong>v3.5.11</strong>: 修正音符生成邏輯：解決音符數量超過 7 個時產生的底線 Bug。</li>
-                    <li><strong>v3.5.10</strong>: 最終體檢：確保計時器自動啟動、補完更新日誌。</li>
-                    <li><strong>v3.5.8</strong>: 交互優化：檢查答案不再自動發聲，改為點擊題目或正解後發聲。</li>
-                    <li><strong>v3.5.6</strong>: 計時修正：新增 Practice Time 總練習計時器。</li>
-                    <li><strong>v3.5.0</strong>: 功能解耦：新增「純音程位移」模式。</li>
+                    <li><strong>v4.0.4</strong>: 新增功能：增加「步驟間亂序」開關，可自由切換是否在轉換步驟時打亂音符順序。</li>
+                    <li><strong>v4.0.3</strong>: 強化難度：三向循環模式預設步驟間亂序。</li>
+                    <li><strong>v4.0.2</strong>: 介面優化：對照表新增簡譜顯示。</li>
                 </ul>
             </details>
         </footer>
     </div>
 
 <script>
-    const solArr = ["Do", "Re", "Mi", "Fa", "So", "La", "Si"], namArr = ["C", "D", "E", "F", "G", "A", "B"], freqs = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88];
+    const solArr = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si"], 
+          namArr = ["C", "D", "E", "F", "G", "A", "B"], 
+          numArr = ["1", "2", "3", "4", "5", "6", "7"],
+          freqs = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88];
+    
     let state = { notes: [], userInputs: [], stepIdx: 0, isAnsMode: false, currentJump: 0, ctx: null, timerInt: null, sessionStartTime: null, sessionTimerInt: null, questionCounter: 0 };
-    const MODE_STEPS = { mapping: [10, 11], displacement: [20, 21], comprehensive: [1, 2, 3, 4, 5] };
+    
+    const MODE_STEPS = { 
+        map_ns: [10, 11], 
+        map_nn: [30, 31], 
+        map_sn: [40, 41], 
+        cycle: [50, 51, 52] 
+    };
 
     window.onload = () => {
         const ref = document.getElementById("refList"); ref.innerHTML = "";
-        namArr.forEach((n, i) => { ref.innerHTML += `<div class="ref-item" onclick="playSingle(${i})"><div class="ref-note-name">${n}</div><div class="ref-sol-name">${solArr[i]}</div></div>`; });
+        namArr.forEach((n, i) => { 
+            ref.innerHTML += `
+                <div class="ref-item" onclick="playSingle(${i})">
+                    <div class="ref-note-name">${n}</div>
+                    <div class="ref-sol-name">${solArr[i]}</div>
+                    <div class="ref-num-name">${numArr[i]}</div>
+                </div>`; 
+        });
         updateModeUI(); renderKeyboard();
     };
 
     function togglePanel(id) { const p = document.getElementById(id); const isShow = (p.style.display === "block"); document.querySelectorAll('.info-panel').forEach(el => el.style.display = 'none'); p.style.display = isShow ? 'none' : 'block'; }
+    
     function updateModeUI() { 
-        document.getElementById("jumpSettings").style.display = (document.getElementById("trainMode").value === 'mapping') ? 'none' : 'block';
         document.getElementById("sprintNGroup").style.display = (document.getElementById("timerMode").value === 'sprint') ? 'flex' : 'none';
         if(state.notes.length > 0) startTimer();
     }
+
     function updateSessionTimer() {
         if (!state.sessionStartTime) return;
         const diff = Math.floor((Date.now() - state.sessionStartTime) / 1000);
@@ -159,21 +171,12 @@
         const ss = String(diff % 60).padStart(2, '0');
         document.getElementById("sessionTimer").innerText = `Practice Time: ${mm}:${ss}`;
     }
+
     function ensureSessionTimer() {
         if (!state.sessionStartTime) { state.sessionStartTime = Date.now(); state.sessionTimerInt = setInterval(updateSessionTimer, 1000); }
     }
-    function getStepPitches() {
-        const mode = document.getElementById("trainMode").value, j = state.currentJump, sid = MODE_STEPS[mode][state.stepIdx];
-        switch(sid) {
-            case 2: case 3: case 20: return state.notes.map(n => n + j);
-            case 4: case 5: return state.notes.map(n => n + j * 2);
-            case 21: return state.notes.map(n => n + j); 
-            default: return state.notes;
-        }
-    }
+
     function playNotes(targetIndices, force = false) {
-        const sid = MODE_STEPS[document.getElementById("trainMode").value][state.stepIdx];
-        if (!force && (sid === 10 || sid === 3)) return;
         if (!state.ctx) state.ctx = new AudioContext();
         if (state.ctx.state === 'suspended') state.ctx.resume();
         const now = state.ctx.currentTime, oct = parseInt(document.getElementById("baseOctave").value);
@@ -184,33 +187,57 @@
             osc.connect(gain); gain.connect(state.ctx.destination); osc.start(now + i * 0.4); osc.stop(now + i * 0.4 + 0.6);
         });
     }
+
     function resetApp() { state.notes = []; state.stepIdx = 0; state.questionCounter = 0; state.isAnsMode = false; clearInterval(state.timerInt); clearInterval(state.sessionTimerInt); state.sessionStartTime = null; ensureSessionTimer(); document.getElementById("settingsPanel").style.display = "none"; handleClick(); }
 
     function handleClick() {
         ensureSessionTimer(); 
         const mode = document.getElementById("trainMode").value, steps = MODE_STEPS[mode];
         if (state.notes.length === 0) { generateNewTask(); return; }
+        
         if (!state.isAnsMode) {
             state.isAnsMode = true; clearInterval(state.timerInt);
             const bar = document.getElementById("timerBar"); if (bar) { bar.style.transition = 'none'; bar.style.width = window.getComputedStyle(bar).width; }
-            const j = state.currentJump, sid = steps[state.stepIdx]; let correct = [];
-            if (sid === 10) correct = state.notes.map(n => solArr[n]);
-            else if (sid === 11 || sid === 1) correct = state.notes.map(n => namArr[n]);
-            else if (sid === 2 || sid === 20) correct = state.notes.map(n => namArr[(n+j)%7]);
-            else if (sid === 3) correct = state.notes.map(n => solArr[(n+j)%7]);
-            else if (sid === 21) correct = state.notes.map(n => solArr[(n+j)%7]);
-            else if (sid === 4) correct = state.notes.map(n => solArr[(n+j*2)%7]);
-            else if (sid === 5) correct = state.notes.map(n => namArr[(n+j*2)%7]);
-            state.notes.forEach((_, i) => { const s = document.getElementById("slot" + i); if (state.userInputs[i] === correct[i]) s.classList.add("slot-correct"); else { s.classList.add("slot-wrong"); s.innerText = state.userInputs[i] || "X"; const keys = document.querySelectorAll('.key'); keys.forEach(k => { if(k.innerText === correct[i]) { k.classList.add('hint-correct'); setTimeout(()=>k.classList.remove('hint-correct'), 800); }}); }});
-            document.getElementById("answerArea").innerText = "正解：" + correct.join(" "); document.getElementById("answerArea").style.visibility = "visible"; document.getElementById("mainBtn").innerText = "下一步驟";
+            
+            const sid = steps[state.stepIdx]; 
+            let correct = [];
+            switch(sid) {
+                case 10: correct = state.notes.map(n => solArr[n]); break;
+                case 11: case 31: case 52: correct = state.notes.map(n => namArr[n]); break;
+                case 30: case 40: case 50: correct = state.notes.map(n => numArr[n]); break;
+                case 41: case 51: correct = state.notes.map(n => solArr[n]); break;
+            }
+
+            state.notes.forEach((_, i) => { 
+                const s = document.getElementById("slot" + i); 
+                if (state.userInputs[i] === correct[i]) s.classList.add("slot-correct"); 
+                else { 
+                    s.classList.add("slot-wrong"); 
+                    s.innerText = state.userInputs[i] || "X"; 
+                    const keys = document.querySelectorAll('.key'); 
+                    keys.forEach(k => { if(k.innerText === correct[i]) { k.classList.add('hint-correct'); setTimeout(()=>k.classList.remove('hint-correct'), 800); }}); 
+                }
+            });
+            document.getElementById("answerArea").innerText = "正解：" + correct.join(" "); 
+            document.getElementById("answerArea").style.visibility = "visible"; 
+            document.getElementById("mainBtn").innerText = "下一步驟";
         } else {
-            state.stepIdx++; if (state.stepIdx >= steps.length) generateNewTask(); else { if (mode === 'mapping' && steps[state.stepIdx] === 11) state.notes.sort(() => Math.random() - 0.5); renderStep(); playNotes(getStepPitches()); }
+            state.stepIdx++; 
+            if (state.stepIdx >= steps.length) {
+                generateNewTask(); 
+            } else { 
+                // v4.0.4 修改：根據「步驟間亂序」開關決定是否亂序
+                if (document.getElementById("stepRandom").checked) {
+                    state.notes.sort(() => Math.random() - 0.5); 
+                }
+                renderStep(); 
+                playNotes(state.notes); 
+            }
         }
     }
+
     function generateNewTask() {
-        state.stepIdx = 0; state.questionCounter++; state.isAnsMode = false; const mode = document.getElementById("trainMode").value;
-        state.currentJump = (mode === 'mapping') ? 0 : parseInt(document.getElementById("jumpVal").value);
-        if (document.getElementById("jumpMode").value === 'random' && mode !== 'mapping') state.currentJump = Math.floor(Math.random()*5)+1;
+        state.stepIdx = 0; state.questionCounter++; state.isAnsMode = false;
         const count = parseInt(document.getElementById("noteCount").value) || 4; 
         state.notes = []; 
         let pool = [0,1,2,3,4,5,6];
@@ -218,27 +245,31 @@
             if (pool.length === 0) pool = [0,1,2,3,4,5,6];
             state.notes.push(pool.splice(Math.floor(Math.random()*pool.length), 1)[0]);
         }
-        renderStep(); playNotes(getStepPitches());
+        renderStep(); playNotes(state.notes);
     }
+
     function renderStep() {
         const mode = document.getElementById("trainMode").value, sid = MODE_STEPS[mode][state.stepIdx];
         state.isAnsMode = false; state.userInputs = []; const sCont = document.getElementById("slotContainer");
         document.getElementById("answerArea").style.visibility = "hidden"; sCont.innerHTML = "";
         state.notes.forEach((_, i) => { const s = document.createElement("div"); s.className = "input-slot"; s.id = "slot" + i; sCont.appendChild(s); });
-        const inst = document.getElementById("instruction"), qArea = document.getElementById("questionArea"), j = state.currentJump;
+        
+        const inst = document.getElementById("instruction"), qArea = document.getElementById("questionArea");
+        
         switch(sid) {
             case 10: inst.innerText = "音名 ➔ 唱名"; qArea.innerText = state.notes.map(n => namArr[n]).join(" "); break;
             case 11: inst.innerText = "唱名 ➔ 音名"; qArea.innerText = state.notes.map(n => solArr[n]).join(" "); break;
-            case 20: inst.innerText = `音名位移 (+${j})`; qArea.innerText = state.notes.map(n => namArr[n]).join(" "); break;
-            case 21: inst.innerText = `唱名位移 (+${j})`; qArea.innerText = state.notes.map(n => solArr[n]).join(" "); break;
-            case 1: inst.innerText = "唱名 ➔ 音名"; qArea.innerText = state.notes.map(n => solArr[n]).join(" "); break;
-            case 2: inst.innerText = `音名位移 (+${j})`; qArea.innerText = state.notes.map(n => namArr[n]).join(" "); break;
-            case 3: inst.innerText = "音名 ➔ 唱名"; qArea.innerText = state.notes.map(n => namArr[(n+j)%7]).join(" "); break;
-            case 4: inst.innerText = `唱名位移 (+${j})`; qArea.innerText = state.notes.map(n => solArr[(n+j)%7]).join(" "); break;
-            case 5: inst.innerText = "唱名 ➔ 音名"; qArea.innerText = state.notes.map(n => solArr[(n+j*2)%7]).join(" "); break;
+            case 30: inst.innerText = "音名 ➔ 簡譜"; qArea.innerText = state.notes.map(n => namArr[n]).join(" "); break;
+            case 31: inst.innerText = "簡譜 ➔ 音名"; qArea.innerText = state.notes.map(n => numArr[n]).join(" "); break;
+            case 40: inst.innerText = "唱名 ➔ 簡譜"; qArea.innerText = state.notes.map(n => solArr[n]).join(" "); break;
+            case 41: inst.innerText = "簡譜 ➔ 唱名"; qArea.innerText = state.notes.map(n => numArr[n]).join(" "); break;
+            case 50: inst.innerText = "音名 ➔ 簡譜"; qArea.innerText = state.notes.map(n => namArr[n]).join(" "); break;
+            case 51: inst.innerText = "簡譜 ➔ 唱名"; qArea.innerText = state.notes.map(n => numArr[n]).join(" "); break;
+            case 52: inst.innerText = "唱名 ➔ 音名"; qArea.innerText = state.notes.map(n => solArr[n]).join(" "); break;
         }
         renderKeyboard(); startTimer(); document.getElementById("mainBtn").innerText = "檢查答案";
     }
+
     function startTimer() {
         clearInterval(state.timerInt); const mode = document.getElementById("timerMode").value;
         const bar = document.getElementById("timerBar"), cont = document.getElementById("timerBarCont");
@@ -251,15 +282,22 @@
         setTimeout(() => { bar.style.transition = `width ${sec}s linear`; bar.style.width = "0%"; }, 50);
         state.timerInt = setInterval(() => { if (!state.isAnsMode) handleClick(); }, sec * 1000);
     }
+
     function renderKeyboard() {
         const kb = document.getElementById("keyboard"), mode = document.getElementById("trainMode").value, sid = MODE_STEPS[mode][state.stepIdx];
-        const isSol = (sid === 10 || sid === 3 || sid === 4 || sid === 21); kb.innerHTML = "";
-        let keys = [...(isSol ? solArr : namArr)]; if (document.getElementById("kbRandom").checked) keys.sort(() => Math.random() - 0.5);
+        kb.innerHTML = "";
+        
+        const isSol = (sid === 10 || sid === 41 || sid === 51);
+        const isNum = (sid === 30 || sid === 40 || sid === 50);
+        let keys = [...(isSol ? solArr : (isNum ? numArr : namArr))];
+        
+        if (document.getElementById("kbRandom").checked) keys.sort(() => Math.random() - 0.5);
         keys.forEach(kText => { const k = document.createElement("div"); k.className = "key"; k.innerText = kText; k.onclick = () => { if (!state.isAnsMode && state.userInputs.length < state.notes.length) { state.userInputs.push(kText); updateSlots(); }}; kb.appendChild(k); });
         const del = document.createElement("div"); del.className = "key control"; del.innerText = "⌫"; del.onclick = () => { if(!state.isAnsMode) { state.userInputs.pop(); updateSlots(); }}; kb.appendChild(del);
     }
+
     function updateSlots() { state.notes.forEach((_, i) => { document.getElementById("slot" + i).innerText = state.userInputs[i] || ""; }); }
-    function handleReplay() { playNotes(getStepPitches(), true); }
+    function handleReplay() { playNotes(state.notes, true); }
     function playSingle(i) { playNotes([i], true); }
 </script>
 </body>
