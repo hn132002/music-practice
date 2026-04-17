@@ -3,27 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>橙色的樂理強化 v4.1.2</title>
+    <title>橙色的樂理強化 v4.2.1</title>
     <style>
         :root { --primary: #3498db; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; }
         body { font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: var(--bg); margin: 0; min-height: 100vh; overflow-x: hidden; }
         
         /* 靈魂漂浮動畫 */
-        .soul-note {
-            position: fixed;
-            pointer-events: none;
-            font-weight: 900;
-            color: var(--primary);
-            opacity: 0;
-            font-size: 1.5rem;
-            z-index: 100;
-            user-select: none;
-            animation: soulFloatAnim 2s ease-out forwards;
-        }
-        @keyframes soulFloatAnim {
-            0% { transform: translateY(0) scale(1); opacity: 0.3; }
-            100% { transform: translateY(-120px) scale(1.5); opacity: 0; }
-        }
+        .soul-note { position: fixed; pointer-events: none; font-weight: 900; color: var(--primary); opacity: 0; font-size: 1.5rem; z-index: 100; user-select: none; animation: soulFloatAnim 2s ease-out forwards; }
+        @keyframes soulFloatAnim { 0% { transform: translateY(0) scale(1); opacity: 0.3; } 100% { transform: translateY(-120px) scale(1.5); opacity: 0; } }
 
         .card { background: white; padding: 25px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; max-width: 500px; width: 100%; position: relative; z-index: 10; }
         .top-nav { position: absolute; top: 15px; width: calc(100% - 40px); display: flex; justify-content: space-between; padding: 0 5px; z-index: 10; }
@@ -34,56 +21,22 @@
         .session-timer { background: #eef2f7; color: #34495e; padding: 6px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; font-family: 'Courier New', monospace; display: inline-block; border: 1px solid #dcdde1; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
         .base-status { font-size: 0.75em; color: #e67e22; font-weight: bold; margin-top: 5px; height: 1.2em; letter-spacing: 1px; }
 
-        .version-tag { color: #95a5a6; font-size: 0.7em; font-family: monospace; margin-bottom: 5px; }
         .info-panel { background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; display: none; font-size: 0.85em; border: 1px solid #ddd; max-height: 70vh; overflow-y: auto; }
         .setting-group { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
         .group-title { font-weight: 800; color: var(--primary); display: block; margin-bottom: 8px; font-size: 1.1em; }
         .setting-item { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; }
         
-        #refList { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; gap: 4px; overflow-x: auto; }
-        .ref-item { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 42px; background: #fff; padding: 8px 2px; border-radius: 10px; border: 1px solid #eee; cursor: pointer; }
-        .ref-note-name { font-weight: bold; color: var(--primary); font-size: 1.1em; }
-        .ref-sol-name { font-weight: 800; color: #2c3e50; font-size: 0.95em; }
-        .ref-num-name { font-weight: bold; color: #e67e22; font-size: 0.9em; }
-        
-        .concept-card { background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--primary); font-size: 0.95em; line-height: 1.4; }
-        
+        /* 級數選擇器 */
+        .degree-picker { display: flex; justify-content: space-between; gap: 4px; margin-top: 5px; width: 100%; flex-wrap: wrap; }
+        .deg-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; color: #95a5a6; transition: 0.2s; font-size: 0.85em; background: #fff; }
+        .deg-btn.active { border-color: var(--success); color: #fff; background: var(--success); box-shadow: 0 2px 5px rgba(46, 204, 113, 0.3); }
+
         .timer-bar-container { width: 100%; height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-bottom: 10px; display: none; }
         #timerBar { height: 100%; background: var(--error); width: 100%; transition: width linear; }
         
-        .quiz-container { 
-            background: #f9f9f9; 
-            border-radius: 20px; 
-            padding: 20px; 
-            margin: 10px 0; 
-            border: 2px solid #eee; 
-            min-height: 150px; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            text-align: center;
-        }
-        .instruction { 
-            font-size: 1.4em; 
-            font-weight: 900; 
-            color: #34495e; 
-            margin-bottom: 10px; 
-            line-height: 1.6;
-            letter-spacing: 1px;
-        }
-        .mode-hint { 
-            font-size: 0.95em; 
-            color: var(--primary); 
-            font-weight: bold; 
-            margin-top: 10px; 
-            display: inline-block;
-            background: #eef7ff; 
-            padding: 5px 15px;
-            border-radius: 12px;
-            border: 1px solid #d6eaff;
-        }
-        
+        .quiz-container { background: #f9f9f9; border-radius: 20px; padding: 20px; margin: 10px 0; border: 2px solid #eee; min-height: 150px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .instruction { font-size: 1.4em; font-weight: 900; color: #34495e; margin-bottom: 10px; line-height: 1.6; letter-spacing: 1px; }
+        .mode-hint { font-size: 0.95em; color: var(--primary); font-weight: bold; margin-top: 10px; display: inline-block; background: #eef7ff; padding: 5px 15px; border-radius: 12px; border: 1px solid #d6eaff; }
         .sprint-text { color: var(--error); animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
@@ -93,34 +46,35 @@
         
         .slot-correct { color: var(--success) !important; border-bottom-color: var(--success) !important; }
         .slot-wrong { color: var(--error) !important; border-bottom-color: var(--error) !important; }
-        .keyboard { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 15px; }
-        .key { padding: 15px 0; background: #fff; border-radius: 8px; font-weight: bold; cursor: pointer; border: 1px solid #dcdde1; box-shadow: 0 3px 0 #eee; font-size: 0.9em; -webkit-tap-highlight-color: transparent; }
-        .key.hint-correct { background: var(--success) !important; color: white !important; }
-        .key.control { background: #95a5a6; color: white; grid-column: span 7; margin-top: 4px; padding: 10px 0; font-size: 1.2em; }
-        #mainBtn { padding: 16px; font-size: 1.2em; cursor: pointer; border: none; border-radius: 14px; font-weight: bold; width: 100%; color: white; background: var(--success); margin-top: 15px; box-shadow: 0 4px 0 #27ae60; outline: none; }
         
+        .keyboard { display: grid; gap: 8px; margin-top: 15px; width: 100%; }
+        .kb-standard { grid-template-columns: repeat(7, 1fr); }
+        .kb-harmonica { grid-template-columns: repeat(4, 1fr); }
+        
+        .key { padding: 15px 0; background: #fff; border-radius: 12px; font-weight: bold; cursor: pointer; border: 1px solid #dcdde1; box-shadow: 0 4px 0 #eee; font-size: 0.9em; -webkit-tap-highlight-color: transparent; }
+        .key.hint-correct { background: var(--success) !important; color: white !important; }
+        .key.control { background: #95a5a6; color: white; grid-column: 1 / -1; margin-top: 4px; padding: 10px 0; font-size: 1.2em; }
+        
+        #mainBtn { padding: 16px; font-size: 1.2em; cursor: pointer; border: none; border-radius: 14px; font-weight: bold; width: 100%; color: white; background: var(--success); margin-top: 15px; box-shadow: 0 4px 0 #27ae60; outline: none; }
         .ans-text { margin-top: 8px; font-weight: bold; color: #7f8c8d; height: 1.2em; visibility: hidden; cursor: pointer; transition: color 0.2s; }
-        .ans-text:hover { color: var(--primary); }
         
         .footer { margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px; color: #95a5a6; font-size: 0.8em; text-align: center; }
-        .footer a { color: #3498db; text-decoration: none; }
         .changelog { margin-top: 10px; text-align: left; background: #f9f9f9; padding: 12px; border-radius: 10px; font-size: 0.85em; border: 1px solid #eee; }
-        .changelog summary { cursor: pointer; color: #7f8c8d; font-weight: bold; margin-bottom: 5px; outline: none; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <div class="top-nav">
-            <div class="nav-item" onclick="togglePanel('pianoPanel')" title="核心概念">🎹</div>
+            <div class="nav-item" onclick="togglePanel('pianoPanel')">🎹</div>
             <div style="display: flex; gap: 15px;">
-                <a href="https://hn132002.github.io/music-practice/" class="nav-item">🏠</a>
+                <a href="#" class="nav-item">🏠</a>
                 <div class="nav-item" onclick="togglePanel('settingsPanel')">⚙️</div>
             </div>
         </div>
 
         <h1 class="app-title">橙色的樂理強化</h1>
-        <div class="version-tag">Version 4.1.2</div>
+        <div class="version-tag">Version 4.2.1</div>
         
         <div class="timer-group">
             <div id="sessionTimer" class="session-timer">Practice Time: 00:00</div>
@@ -128,66 +82,61 @@
         </div>
 
         <div id="pianoPanel" class="info-panel">
-            <span class="group-title">📚 樂理核心定義</span>
-            <div class="concept-card"><b>1. 固定唱名</b>：C=Do, D=Re, E=Mi, F=Fa, G=Sol, A=La, B=Si。</div>
-            <div class="concept-card" style="border-left-color: var(--success);"><b>2. 簡譜對照</b>：Do=1, Re=2, Mi=3, Fa=4, Sol=5, La=6, Si=7。</div>
-            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 三向循環</b>：音名 ➔ 簡譜 ➔ 唱名 ➔ 音名。這是一個完整的閉環反應練習。</div>
-            <span class="group-title">音名唱名簡譜對照表</span>
-            <div id="refList"></div>
+            <span class="group-title">📚 樂理參考</span>
+            <div id="refList" style="display:flex; justify-content:space-between; margin-top:5px; text-align:center;"></div>
         </div>
 
         <div id="settingsPanel" class="info-panel">
             <div class="setting-group">
                 <span class="group-title">核心訓練</span>
                 <div class="setting-item">
-                    <label>模式</label>
+                    <label>訓練模式</label>
                     <select id="trainMode" onchange="updateModeUI()">
-                        <option value="map_ns" selected>音名 ↔ 唱名轉換</option>
-                        <option value="map_nn">音名 ↔ 簡譜轉換</option>
-                        <option value="map_sn">唱名 ↔ 簡譜轉換</option>
-                        <option value="cycle">三向循環邏輯鏈</option>
+                        <option value="map_ns" selected>音名 ↔ 唱名</option>
+                        <option value="map_nn">音名 ↔ 簡譜</option>
+                        <option value="map_sn">唱名 ↔ 簡譜</option>
+                        <option value="cycle">三向循環</option>
                     </select>
+                </div>
+                <div class="setting-item">
+                    <label>鍵盤排列模式</label>
+                    <select id="layoutMode" onchange="renderKeyboard()">
+                        <option value="standard" selected>鋼琴標準 (1x7)</option>
+                        <option value="harmonica">口琴實體 (4x2)</option>
+                    </select>
+                </div>
+                <div class="setting-item" style="flex-direction: column; align-items: flex-start;">
+                    <label style="margin-bottom: 8px;">出題級數範圍 (點擊切換)</label>
+                    <div class="degree-picker">
+                        <div class="deg-btn active" id="deg0" onclick="this.classList.toggle('active')">1</div>
+                        <div class="deg-btn active" id="deg1" onclick="this.classList.toggle('active')">2</div>
+                        <div class="deg-btn active" id="deg2" onclick="this.classList.toggle('active')">3</div>
+                        <div class="deg-btn active" id="deg3" onclick="this.classList.toggle('active')">4</div>
+                        <div class="deg-btn active" id="deg4" onclick="this.classList.toggle('active')">5</div>
+                        <div class="deg-btn active" id="deg5" onclick="this.classList.toggle('active')">6</div>
+                        <div class="deg-btn active" id="deg6" onclick="this.classList.toggle('active')">7</div>
+                        <div class="deg-btn active" id="deg7" onclick="this.classList.toggle('active')">1(高)</div>
+                    </div>
                 </div>
                 <div class="setting-item"><label>音符數量</label><input type="number" id="noteCount" value="4" min="1" max="14" style="width:45px"></div>
-                <div class="setting-item"><label>基準音高</label>
-                    <select id="baseOctave" onchange="updateStatusDisplay()">
-                        <option value="-1">低八度</option><option value="0" selected>標準 (C4)</option><option value="1">高八度</option>
-                    </select>
-                </div>
-                <div class="setting-item"><label>基準根音</label>
-                    <select id="baseRoot" onchange="updateStatusDisplay()">
-                        <option value="0" selected>C</option><option value="1">C# / Db</option><option value="2">D</option><option value="3">D# / Eb</option>
-                        <option value="4">E</option><option value="5">F</option><option value="6">F# / Gb</option><option value="7">G</option>
-                        <option value="8">G# / Ab</option><option value="9">A</option><option value="10">A# / Bb</option><option value="11">B</option>
-                    </select>
-                </div>
                 <div class="setting-item"><label>基準調性</label>
-                    <select id="baseMode" onchange="updateStatusDisplay()">
-                        <option value="major" selected>大調 (Major)</option>
-                        <option value="minor">自然小調 (Natural Minor)</option>
+                    <select id="baseRoot" onchange="updateStatusDisplay()">
+                        <option value="0" selected>C</option><option value="2">D</option><option value="4">E</option><option value="5">F</option><option value="7">G</option><option value="9">A</option><option value="11">B</option>
                     </select>
                 </div>
             </div>
+            
             <div class="setting-group">
-                <span class="group-title">計時與強度</span>
+                <span class="group-title">強度與聲音</span>
                 <div class="setting-item"><label>計時模式</label>
                     <select id="timerMode" onchange="updateModeUI()">
                         <option value="off" selected>關閉</option><option value="always">每題計時</option><option value="sprint">隨機衝刺</option>
                     </select>
                 </div>
                 <div id="sprintNGroup" class="setting-item" style="display:none;"><label>衝刺頻率 (1/N)</label><input type="number" id="sprintN" value="3" min="1" style="width:45px"></div>
-                <div class="setting-item"><label>倒數秒數</label><input type="number" id="timerSec" value="30" min="3" style="width:45px"></div>
-                <div class="setting-item"><label>步驟間亂序</label><input type="checkbox" id="stepRandom" checked></div>
+                <div class="setting-item"><label>倒數秒數</label><input type="number" id="timerSec" value="10" min="3" style="width:45px"></div>
                 <div class="setting-item"><label>鍵盤亂序</label><input type="checkbox" id="kbRandom" onchange="renderKeyboard()"></div>
-            </div>
-            <div class="setting-group">
-                <span class="group-title">聲音設定</span>
-                <div class="setting-item"><label>題目播放聲音</label><input type="checkbox" id="playQuestSound"></div>
                 <div class="setting-item"><label>作答播放聲音</label><input type="checkbox" id="playAnsSound" checked></div>
-                <div class="setting-item"><label>正解顯示播放</label><input type="checkbox" id="playCorrectSound" checked></div>
-            </div>
-            <div class="setting-group">
-                <span class="group-title">介面標記</span>
                 <div class="setting-item"><label>唱名(5) 標記</label>
                     <div style="display: flex; gap: 10px;">
                         <input type="radio" name="solType" id="solTypeSol" checked onchange="updateSolType()"> <label for="solTypeSol">Sol</label>
@@ -195,6 +144,7 @@
                     </div>
                 </div>
             </div>
+
             <button onclick="applySettings()" style="width:100%; padding:12px; background:var(--success); color:white; border:none; border-radius:10px; font-weight:bold;">完成設定</button>
         </div>
 
@@ -206,32 +156,43 @@
             <div class="input-container" id="slotContainer"></div>
         </div>
         <div id="answerArea" class="ans-text" onclick="handleReplay()">正解：--</div>
-        <div id="keyboard" class="keyboard"></div>
+        
+        <div id="keyboard" class="keyboard kb-standard"></div>
         <button id="mainBtn" onclick="handleClick()">開始練習</button>
 
         <footer class="footer">
             <p>Made with ❤️ by <strong>EtOH58daidai</strong> & <strong>Gemini</strong></p>
-            <p>有事情 TG: <a href="https://t.me/EtOH58daidai" target="_blank">EtOH58daidai</a></p>
             <details class="changelog">
-                <summary>📜 更新日誌與工作紀錄</summary>
+                <summary>📜 更新日誌 v4.2.1</summary>
                 <ul>
-                    <li><strong>v4.1.2</strong>: 綜合優化定版：C 大調強制顯示、術語修正為「自然小調」、首頁置中美化、靈魂漂浮特效實作、設定邏輯重置優化。</li>
-                    <li><strong>v4.0.12</strong>: 衝刺進化：改為真隨機機率觸發衝刺 (1/N)。</li>
-                    <li><strong>v4.0.11</strong>: 個人化：新增「Sol / So」顯示切換。</li>
+                    <li>完全基於 v4.1.2 穩定版重構。</li>
+                    <li>新增「鍵盤排列模式」切換：鋼琴(1x7) 與 口琴實體(4x2)。</li>
+                    <li>口琴排列上排 CEGC，下排 DFAB；最後一格為 C5 高音。</li>
+                    <li>級數過濾器全天候開啟，支援 1~7 及 高音 1。</li>
                 </ul>
             </details>
         </footer>
     </div>
 
 <script>
-    let solArr = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si"];
-    const namArr = ["C", "D", "E", "F", "G", "A", "B"], numArr = ["1", "2", "3", "4", "5", "6", "7"];
-    const INTERVALS = { major: [0, 2, 4, 5, 7, 9, 11], minor: [0, 2, 3, 5, 7, 8, 10] };
+    let solArr = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si", "Do"];
+    const namArr = ["C", "D", "E", "F", "G", "A", "B", "C"];
+    const numArr = ["1", "2", "3", "4", "5", "6", "7", "1"];
+    const INTERVALS = [0, 2, 4, 5, 7, 9, 11, 12];
+    const HARM_INDEX_MAP = [0, 2, 4, 7, 1, 3, 5, 6]; 
 
     let state = { notes: [], userInputs: [], stepIdx: 0, isAnsMode: false, ctx: null, timerInt: null, sessionStartTime: null, sessionTimerInt: null, questionCounter: 0, isCurrentSprint: false };
     const MODE_STEPS = { map_ns: [10, 11], map_nn: [30, 31], map_sn: [40, 41], cycle: [50, 51, 52] };
 
     window.onload = () => { renderRefList(); updateModeUI(); renderKeyboard(); updateStatusDisplay(); };
+
+    function getSelectedPool() {
+        let pool = [];
+        for (let i = 0; i < 8; i++) {
+            if (document.getElementById(`deg${i}`).classList.contains('active')) pool.push(i);
+        }
+        return pool.length > 0 ? pool : [0, 1, 2, 3, 4, 5, 6, 7];
+    }
 
     function triggerSoulFloat(correctSymbols) {
         state.notes.forEach((_, i) => {
@@ -245,25 +206,21 @@
     }
 
     function updateSolType() {
-        const isSo = document.getElementById("solTypeSo").checked;
-        solArr[4] = isSo ? "So" : "Sol";
+        solArr[4] = document.getElementById("solTypeSo").checked ? "So" : "Sol";
+        solArr[7] = solArr[0]; 
         renderRefList(); renderKeyboard();
         if (state.notes.length > 0) renderStep();
     }
 
     function renderRefList() {
-        const ref = document.getElementById("refList"); ref.innerHTML = "";
-        namArr.forEach((n, i) => { 
-            ref.innerHTML += `<div class="ref-item" onclick="playSingle(${i})"><div class="ref-note-name">${n}</div><div class="ref-sol-name">${solArr[i]}</div><div class="ref-num-name">${numArr[i]}</div></div>`; 
-        });
+        const ref = document.getElementById("refList"); if (!ref) return;
+        ref.innerHTML = "";
+        for(let i=0; i<7; i++) { ref.innerHTML += `<div style="font-size:0.8em"><b>${namArr[i]}</b><br>${solArr[i]}</div>`; }
     }
 
     function updateStatusDisplay() {
-        const oct = document.getElementById("baseOctave"), rootSelect = document.getElementById("baseRoot"), mode = document.getElementById("baseMode"), statusEl = document.getElementById("baseStatus");
-        const octText = oct.options[oct.selectedIndex].text, rootText = rootSelect.options[rootSelect.selectedIndex].text, modeVal = mode.value;
-        // v4.1.2: 統一顯示，不再判斷 isDefault
-        let formattedDisplay = (modeVal === "minor") ? (rootText.toLowerCase() + " 自然小調") : (rootText + " 大調");
-        statusEl.innerText = `[ ${formattedDisplay} · ${octText} ]`;
+        const rootSelect = document.getElementById("baseRoot"), statusEl = document.getElementById("baseStatus");
+        statusEl.innerText = `[ ${rootSelect.options[rootSelect.selectedIndex].text} 大調 · 標準音域 ]`;
     }
 
     function togglePanel(id) { const p = document.getElementById(id); const isShow = (p.style.display === "block"); document.querySelectorAll('.info-panel').forEach(el => el.style.display = 'none'); p.style.display = isShow ? 'none' : 'block'; }
@@ -272,132 +229,97 @@
         document.getElementById("sprintNGroup").style.display = (document.getElementById("timerMode").value === 'sprint') ? 'flex' : 'none';
         if (state.notes.length === 0) {
             const modeSelect = document.getElementById("trainMode");
-            const modeName = modeSelect.options[modeSelect.selectedIndex].text;
-            document.getElementById("instruction").innerHTML = `點擊下方綠色按鈕開始<br><span class="mode-hint">目前模式：${modeName}</span>`;
-            document.getElementById("questionArea").innerHTML = "";
-            document.getElementById("slotContainer").innerHTML = "";
-            document.getElementById("mainBtn").innerText = "開始練習";
+            document.getElementById("instruction").innerHTML = `點擊下方綠色按鈕開始<br><span class="mode-hint">目前模式：${modeSelect.options[modeSelect.selectedIndex].text}</span>`;
         }
-        if(state.notes.length > 0) startTimer();
+        renderKeyboard();
     }
 
     function applySettings() {
         clearInterval(state.timerInt); clearInterval(state.sessionTimerInt);
         state.timerInt = state.sessionTimerInt = state.sessionStartTime = null;
-        state.notes = []; state.stepIdx = 0; state.questionCounter = 0; state.isAnsMode = false;
+        state.notes = []; state.stepIdx = 0; state.isAnsMode = false;
         document.getElementById("sessionTimer").innerText = "Practice Time: 00:00";
         document.getElementById("timerBarCont").style.display = "none";
         document.getElementById("answerArea").style.visibility = "hidden";
-        const bar = document.getElementById("timerBar");
-        if (bar) { bar.style.transition = 'none'; bar.style.width = '100%'; }
+        const bar = document.getElementById("timerBar"); if (bar) { bar.style.transition = 'none'; bar.style.width = '100%'; }
         document.getElementById("settingsPanel").style.display = "none";
         updateModeUI(); updateStatusDisplay();
     }
 
-    function updateSessionTimer() { 
-        if (!state.sessionStartTime) return; 
-        const diff = Math.floor((Date.now() - state.sessionStartTime) / 1000); 
-        const mm = String(Math.floor(diff / 60)).padStart(2, '0'), ss = String(diff % 60).padStart(2, '0'); 
-        document.getElementById("sessionTimer").innerText = `Practice Time: ${mm}:${ss}`; 
-    }
-
     function ensureSessionTimer() { 
-        if (!state.sessionStartTime) { state.sessionStartTime = Date.now(); state.sessionTimerInt = setInterval(updateSessionTimer, 1000); } 
+        if (!state.sessionStartTime) { 
+            state.sessionStartTime = Date.now(); 
+            state.sessionTimerInt = setInterval(() => { 
+                const diff = Math.floor((Date.now() - state.sessionStartTime) / 1000); 
+                const mm = String(Math.floor(diff / 60)).padStart(2, '0'), ss = String(diff % 60).padStart(2, '0'); 
+                document.getElementById("sessionTimer").innerText = `Practice Time: ${mm}:${ss}`; 
+            }, 1000); 
+        } 
     }
 
-    function playNotes(targetIndices, force = false) {
-        if (!force && !document.getElementById("playQuestSound").checked) return;
+    function playNotes(targetIndices) {
         if (!state.ctx) state.ctx = new AudioContext();
         if (state.ctx.state === 'suspended') state.ctx.resume();
-        const now = state.ctx.currentTime, octShift = parseInt(document.getElementById("baseOctave").value), rootOffset = parseInt(document.getElementById("baseRoot").value), mode = document.getElementById("baseMode").value;
+        const now = state.ctx.currentTime, rootOffset = parseInt(document.getElementById("baseRoot").value);
         targetIndices.forEach((idx, i) => {
             const osc = state.ctx.createOscillator(), gain = state.ctx.createGain();
-            const degree = ((idx % 7) + 7) % 7, octaveOffset = Math.floor(idx / 7) + octShift, semitones = rootOffset + INTERVALS[mode][degree] + (octaveOffset * 12), freq = 261.63 * Math.pow(2, semitones / 12);
-            osc.frequency.setValueAtTime(freq, now + i * 0.4); gain.gain.setValueAtTime(0, now + i * 0.4); gain.gain.linearRampToValueAtTime(0.1, now + i * 0.4 + 0.01); gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.4 + 0.5);
+            const freq = 261.63 * Math.pow(2, (rootOffset + INTERVALS[idx]) / 12);
+            osc.frequency.setValueAtTime(freq, now + i * 0.4); 
+            gain.gain.setValueAtTime(0, now + i * 0.4); gain.gain.linearRampToValueAtTime(0.1, now + i * 0.4 + 0.01); gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.4 + 0.5);
             osc.connect(gain); gain.connect(state.ctx.destination); osc.start(now + i * 0.4); osc.stop(now + i * 0.4 + 0.6);
         });
     }
 
     function handleClick() {
-        ensureSessionTimer(); const mode = document.getElementById("trainMode").value, steps = MODE_STEPS[mode];
+        ensureSessionTimer(); const steps = MODE_STEPS[document.getElementById("trainMode").value];
         if (state.notes.length === 0) { generateNewTask(); return; }
         if (!state.isAnsMode) {
             state.isAnsMode = true; clearInterval(state.timerInt);
-            const bar = document.getElementById("timerBar");
-            if (bar) { bar.style.transition = 'none'; bar.style.width = window.getComputedStyle(bar).width; }
+            const bar = document.getElementById("timerBar"); if (bar) { bar.style.transition = 'none'; bar.style.width = window.getComputedStyle(bar).width; }
             const sid = steps[state.stepIdx]; let correct = [];
-            switch(sid) {
-                case 10: correct = state.notes.map(n => solArr[n]); break;
-                case 11: case 31: case 52: correct = state.notes.map(n => namArr[n]); break;
-                case 30: case 40: case 50: correct = state.notes.map(n => numArr[n]); break;
-                case 41: case 51: correct = state.notes.map(n => solArr[n]); break;
-            }
+            const isSol = (sid === 10 || sid === 41 || sid === 51), isNum = (sid === 30 || sid === 40 || sid === 50);
+            correct = state.notes.map(n => isSol ? solArr[n] : (isNum ? numArr[n] : namArr[n]));
             triggerSoulFloat(correct);
             state.notes.forEach((_, i) => { 
                 const s = document.getElementById("slot" + i); 
                 if (state.userInputs[i] === correct[i]) s.classList.add("slot-correct"); 
-                else { 
-                    s.classList.add("slot-wrong"); s.innerText = state.userInputs[i] || "X"; 
-                    const keys = document.querySelectorAll('.key'); keys.forEach(k => { if(k.innerText === correct[i]) { k.classList.add('hint-correct'); setTimeout(()=>k.classList.remove('hint-correct'), 800); }}); 
-                }
+                else { s.classList.add("slot-wrong"); s.innerText = state.userInputs[i] || "X"; }
             });
-            if (document.getElementById("playCorrectSound").checked) playNotes(state.notes, true);
+            playNotes(state.notes);
             document.getElementById("answerArea").innerText = "正解：" + correct.join(" "); 
             document.getElementById("answerArea").style.visibility = "visible"; document.getElementById("mainBtn").innerText = "下一步驟";
         } else {
-            state.stepIdx++; if (state.stepIdx >= steps.length) generateNewTask(); 
-            else { if (document.getElementById("stepRandom").checked) state.notes.sort(() => Math.random() - 0.5); renderStep(); playNotes(state.notes); }
+            state.stepIdx++; if (state.stepIdx >= steps.length) generateNewTask(); else renderStep();
         }
     }
 
     function generateNewTask() {
-        state.stepIdx = 0; state.questionCounter++; state.isAnsMode = false;
+        state.stepIdx = 0; state.isAnsMode = false;
+        const count = parseInt(document.getElementById("noteCount").value) || 4; 
+        state.notes = []; let pool = getSelectedPool(); 
         const n = parseInt(document.getElementById("sprintN").value);
         state.isCurrentSprint = (Math.random() < (1 / n));
-        const count = parseInt(document.getElementById("noteCount").value) || 4; 
-        state.notes = []; let pool = [0,1,2,3,4,5,6];
-        for(let i=0; i<count; i++) { if (pool.length === 0) pool = [0,1,2,3,4,5,6]; state.notes.push(pool.splice(Math.floor(Math.random()*pool.length), 1)[0]); }
-        renderStep(); playNotes(state.notes);
+        for(let i=0; i<count; i++) { if (pool.length === 0) pool = getSelectedPool(); const pickIdx = Math.floor(Math.random()*pool.length); state.notes.push(pool.splice(pickIdx, 1)[0]); }
+        renderStep();
     }
 
     function renderStep() {
-        const mode = document.getElementById("trainMode").value, sid = MODE_STEPS[mode][state.stepIdx];
+        const sid = MODE_STEPS[document.getElementById("trainMode").value][state.stepIdx];
         state.isAnsMode = false; state.userInputs = []; const sCont = document.getElementById("slotContainer"), qArea = document.getElementById("questionArea");
         document.getElementById("answerArea").style.visibility = "hidden"; sCont.innerHTML = ""; qArea.innerHTML = "";
         state.notes.forEach((nIdx, i) => {
-            const q = document.createElement("div"); q.className = "note-q-item"; q.onclick = () => playSingle(nIdx);
-            let qText = "";
-            switch(sid) {
-                case 10: case 30: case 50: qText = namArr[nIdx]; break;
-                case 11: case 40: case 52: qText = solArr[nIdx]; break;
-                case 31: case 41: case 51: qText = numArr[nIdx]; break;
-            }
-            q.innerText = qText; qArea.appendChild(q);
-            const s = document.createElement("div"); s.className = "input-slot"; s.id = "slot" + i; sCont.appendChild(s);
+            const qText = (sid%10 === 0) ? namArr[nIdx] : (sid%10 === 1 ? solArr[nIdx] : numArr[nIdx]);
+            qArea.innerHTML += `<div class="note-q-item" onclick="playNotes([${nIdx}])">${qText}</div>`;
+            sCont.innerHTML += `<div class="input-slot" id="slot${i}"></div>`;
         });
-        const inst = document.getElementById("instruction");
-        let instText = "";
-        switch(sid) {
-            case 10: instText = "音名 ➔ 唱名"; break;
-            case 11: instText = "唱名 ➔ 音名"; break;
-            case 30: instText = "音名 ➔ 簡譜"; break;
-            case 31: instText = "簡譜 ➔ 音名"; break;
-            case 40: instText = "唱名 ➔ 簡譜"; break;
-            case 41: instText = "簡譜 ➔ 唱名"; break;
-            case 50: instText = "音名 ➔ 簡譜"; break;
-            case 51: instText = "簡譜 ➔ 唱名"; break;
-            case 52: instText = "唱名 ➔ 音名"; break;
-        }
         const isSprintActive = (document.getElementById("timerMode").value === 'sprint' && state.isCurrentSprint);
-        inst.innerHTML = instText + (isSprintActive ? ' <br><span class="sprint-text">🔥 隨機衝刺！</span>' : '');
+        document.getElementById("instruction").innerHTML = "樂理轉換練習" + (isSprintActive ? ' <br><span class="sprint-text">🔥 隨機衝刺！</span>' : '');
         renderKeyboard(); startTimer(); document.getElementById("mainBtn").innerText = "檢查答案";
     }
 
     function startTimer() {
         clearInterval(state.timerInt); const mode = document.getElementById("timerMode").value, bar = document.getElementById("timerBar"), cont = document.getElementById("timerBarCont");
-        if (mode === 'off') { cont.style.display = "none"; return; }
-        let isTimed = (mode === 'always') || (mode === 'sprint' && state.isCurrentSprint);
-        if (!isTimed) { cont.style.display = "none"; return; }
+        if (mode === 'off' || (mode === 'sprint' && !state.isCurrentSprint)) { cont.style.display = "none"; return; }
         bar.style.transition = "none"; bar.style.width = "100%"; cont.style.display = "block";
         const sec = parseInt(document.getElementById("timerSec").value);
         setTimeout(() => { bar.style.transition = `width ${sec}s linear`; bar.style.width = "0%"; }, 50);
@@ -405,27 +327,40 @@
     }
 
     function renderKeyboard() {
-        const kb = document.getElementById("keyboard"), mode = document.getElementById("trainMode").value, sid = MODE_STEPS[mode][state.stepIdx];
-        kb.innerHTML = ""; const isSol = (sid === 10 || sid === 41 || sid === 51), isNum = (sid === 30 || sid === 40 || sid === 50);
-        let keys = [...(isSol ? solArr : (isNum ? numArr : namArr))];
-        if (document.getElementById("kbRandom").checked) keys.sort(() => Math.random() - 0.5);
-        keys.forEach(kText => { 
-            const k = document.createElement("div"); k.className = "key"; k.innerText = kText; 
+        const kb = document.getElementById("keyboard"), layout = document.getElementById("layoutMode").value;
+        const sid = MODE_STEPS[document.getElementById("trainMode").value][state.stepIdx];
+        const isSol = (sid === 10 || sid === 41 || sid === 51), isNum = (sid === 30 || sid === 40 || sid === 50);
+        const pool = getSelectedPool();
+        
+        kb.innerHTML = ""; kb.className = layout === 'harmonica' ? "keyboard kb-harmonica" : "keyboard kb-standard";
+        
+        let keys = [];
+        if (layout === 'harmonica') {
+            HARM_INDEX_MAP.forEach(idx => {
+                if (pool.includes(idx)) keys.push({ text: isSol ? solArr[idx] : (isNum ? numArr[idx] : namArr[idx]), idx: idx });
+                else keys.push({ text: "", idx: -1 }); // 空位維持結構
+            });
+        } else {
+            for(let i=0; i<7; i++) {
+                if (pool.includes(i)) keys.push({ text: isSol ? solArr[i] : (isNum ? numArr[i] : namArr[i]), idx: i });
+            }
+            if (document.getElementById("kbRandom").checked) keys.sort(() => Math.random() - 0.5);
+        }
+
+        keys.forEach(kObj => { 
+            const k = document.createElement("div"); k.className = "key"; k.innerText = kObj.text; 
+            if (kObj.idx === -1) k.style.visibility = "hidden";
             k.onclick = () => { 
-                if (!state.isAnsMode && state.userInputs.length < state.notes.length) { 
-                    state.userInputs.push(kText); updateSlots();
-                    if (document.getElementById("playAnsSound").checked) { 
-                        let idx = isSol ? solArr.indexOf(kText) : (isNum ? numArr.indexOf(kText) : namArr.indexOf(kText)); 
-                        playSingle(idx); 
-                    }
+                if (!state.isAnsMode && kObj.idx !== -1 && state.userInputs.length < state.notes.length) { 
+                    state.userInputs.push(kObj.text); 
+                    state.notes.forEach((_, i) => document.getElementById("slot" + i).innerText = state.userInputs[i] || "");
+                    if (document.getElementById("playAnsSound").checked) playNotes([kObj.idx]);
                 }
             }; kb.appendChild(k); 
         });
-        const del = document.createElement("div"); del.className = "key control"; del.innerText = "⌫"; del.onclick = () => { if(!state.isAnsMode) { state.userInputs.pop(); updateSlots(); }}; kb.appendChild(del);
+        const del = document.createElement("div"); del.className = "key control"; del.innerText = "⌫"; del.onclick = () => { if(!state.isAnsMode) { state.userInputs.pop(); state.notes.forEach((_, i) => document.getElementById("slot" + i).innerText = state.userInputs[i] || ""); }}; kb.appendChild(del);
     }
-    function updateSlots() { state.notes.forEach((_, i) => { document.getElementById("slot" + i).innerText = state.userInputs[i] || ""; }); }
-    function handleReplay() { playNotes(state.notes, true); }
-    function playSingle(i) { playNotes([i], true); }
+    function handleReplay() { playNotes(state.notes); }
 </script>
 </body>
 </html>
