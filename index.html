@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>橙色的樂理強化 v4.0.4</title>
+    <title>橙色的樂理強化 v4.0.7</title>
     <style>
         :root { --primary: #3498db; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; }
         body { font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: var(--bg); margin: 0; }
@@ -25,11 +25,13 @@
         .concept-card { background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--primary); font-size: 0.95em; line-height: 1.4; }
         .timer-bar-container { width: 100%; height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-bottom: 10px; display: none; }
         #timerBar { height: 100%; background: var(--error); width: 100%; transition: width linear; }
+        
         .quiz-container { background: #f9f9f9; border-radius: 16px; padding: 15px; margin: 10px 0; border: 2px solid #eee; }
-        .instruction { font-size: 1.1em; font-weight: 800; color: #7f8c8d; margin-bottom: 8px; }
-        .notes-display { font-size: 2.2em; font-weight: bold; color: #2c3e50; margin-bottom: 12px; cursor: pointer; letter-spacing: 2px; }
-        .input-container { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; min-height: 48px; }
+        .instruction { font-size: 1.1em; font-weight: 800; color: #7f8c8d; margin-bottom: 15px; }
+        .notes-display, .input-container { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; width: 100%; }
+        .note-q-item { width: 45px; font-size: 1.8em; font-weight: bold; color: #2c3e50; text-align: center; cursor: pointer; }
         .input-slot { width: 45px; height: 45px; border-bottom: 3px solid #bdc3c7; font-size: 1.2em; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        
         .slot-correct { color: var(--success) !important; border-bottom-color: var(--success) !important; }
         .slot-wrong { color: var(--error) !important; border-bottom-color: var(--error) !important; }
         .keyboard { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 15px; }
@@ -37,7 +39,11 @@
         .key.hint-correct { background: var(--success) !important; color: white !important; }
         .key.control { background: #95a5a6; color: white; grid-column: span 7; margin-top: 4px; padding: 10px 0; font-size: 1.2em; }
         #mainBtn { padding: 16px; font-size: 1.2em; cursor: pointer; border: none; border-radius: 14px; font-weight: bold; width: 100%; color: white; background: var(--success); margin-top: 15px; box-shadow: 0 4px 0 #27ae60; outline: none; }
-        .ans-text { margin-top: 8px; font-weight: bold; color: #7f8c8d; height: 1.2em; visibility: hidden; cursor: pointer; }
+        
+        /* 正解文字樣式與懸停效果 */
+        .ans-text { margin-top: 8px; font-weight: bold; color: #7f8c8d; height: 1.2em; visibility: hidden; cursor: pointer; transition: color 0.2s; }
+        .ans-text:hover { color: var(--primary); }
+        
         .footer { margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px; color: #95a5a6; font-size: 0.8em; text-align: center; }
         .footer a { color: #3498db; text-decoration: none; }
         .changelog { margin-top: 10px; text-align: left; background: #f9f9f9; padding: 12px; border-radius: 10px; font-size: 0.85em; border: 1px solid #eee; }
@@ -55,7 +61,7 @@
         </div>
 
         <h1 class="app-title">橙色的樂理強化</h1>
-        <div class="version-tag">Version 4.0.4</div>
+        <div class="version-tag">Version 4.0.7</div>
         <div id="sessionTimer" class="session-timer">Practice Time: 00:00</div>
 
         <div id="pianoPanel" class="info-panel">
@@ -101,6 +107,13 @@
                 <div class="setting-item"><label>步驟間亂序</label><input type="checkbox" id="stepRandom" checked></div>
                 <div class="setting-item"><label>鍵盤亂序</label><input type="checkbox" id="kbRandom" onchange="renderKeyboard()"></div>
             </div>
+
+            <div class="setting-group">
+                <span class="group-title">聲音設定</span>
+                <div class="setting-item"><label>題目播放聲音</label><input type="checkbox" id="playQuestSound"></div>
+                <div class="setting-item"><label>作答播放聲音</label><input type="checkbox" id="playAnsSound" checked></div>
+                <div class="setting-item"><label>正解顯示播放</label><input type="checkbox" id="playCorrectSound" checked></div>
+            </div>
             <button onclick="resetApp()" style="width:100%; padding:12px; background:var(--success); color:white; border:none; border-radius:10px; font-weight:bold;">啟動訓練</button>
         </div>
 
@@ -108,7 +121,7 @@
 
         <div class="quiz-container">
             <div id="instruction" class="instruction">點擊按鈕開始</div>
-            <div id="questionArea" class="notes-display" onclick="handleReplay()">---</div>
+            <div id="questionArea" class="notes-display"></div>
             <div class="input-container" id="slotContainer"></div>
         </div>
         <div id="answerArea" class="ans-text" onclick="handleReplay()">正解：--</div>
@@ -121,9 +134,9 @@
             <details class="changelog">
                 <summary>📜 更新日誌與工作紀錄</summary>
                 <ul>
-                    <li><strong>v4.0.4</strong>: 新增功能：增加「步驟間亂序」開關，可自由切換是否在轉換步驟時打亂音符順序。</li>
-                    <li><strong>v4.0.3</strong>: 強化難度：三向循環模式預設步驟間亂序。</li>
-                    <li><strong>v4.0.2</strong>: 介面優化：對照表新增簡譜顯示。</li>
+                    <li><strong>v4.0.7</strong>: 交互強化：點擊正解顯示文字可重新播放該題音階，並加入懸停回饋。</li>
+                    <li><strong>v4.0.6</strong>: 功能新增：增加「正解顯示播放」聲音開關。</li>
+                    <li><strong>v4.0.5</strong>: 介面優化：題目與答案格對齊排列。</li>
                 </ul>
             </details>
         </footer>
@@ -158,12 +171,10 @@
     };
 
     function togglePanel(id) { const p = document.getElementById(id); const isShow = (p.style.display === "block"); document.querySelectorAll('.info-panel').forEach(el => el.style.display = 'none'); p.style.display = isShow ? 'none' : 'block'; }
-    
     function updateModeUI() { 
         document.getElementById("sprintNGroup").style.display = (document.getElementById("timerMode").value === 'sprint') ? 'flex' : 'none';
         if(state.notes.length > 0) startTimer();
     }
-
     function updateSessionTimer() {
         if (!state.sessionStartTime) return;
         const diff = Math.floor((Date.now() - state.sessionStartTime) / 1000);
@@ -171,12 +182,13 @@
         const ss = String(diff % 60).padStart(2, '0');
         document.getElementById("sessionTimer").innerText = `Practice Time: ${mm}:${ss}`;
     }
-
     function ensureSessionTimer() {
         if (!state.sessionStartTime) { state.sessionStartTime = Date.now(); state.sessionTimerInt = setInterval(updateSessionTimer, 1000); }
     }
 
     function playNotes(targetIndices, force = false) {
+        if (!force && !document.getElementById("playQuestSound").checked) return;
+
         if (!state.ctx) state.ctx = new AudioContext();
         if (state.ctx.state === 'suspended') state.ctx.resume();
         const now = state.ctx.currentTime, oct = parseInt(document.getElementById("baseOctave").value);
@@ -218,6 +230,11 @@
                     keys.forEach(k => { if(k.innerText === correct[i]) { k.classList.add('hint-correct'); setTimeout(()=>k.classList.remove('hint-correct'), 800); }}); 
                 }
             });
+
+            if (document.getElementById("playCorrectSound").checked) {
+                playNotes(state.notes, true);
+            }
+
             document.getElementById("answerArea").innerText = "正解：" + correct.join(" "); 
             document.getElementById("answerArea").style.visibility = "visible"; 
             document.getElementById("mainBtn").innerText = "下一步驟";
@@ -226,10 +243,7 @@
             if (state.stepIdx >= steps.length) {
                 generateNewTask(); 
             } else { 
-                // v4.0.4 修改：根據「步驟間亂序」開關決定是否亂序
-                if (document.getElementById("stepRandom").checked) {
-                    state.notes.sort(() => Math.random() - 0.5); 
-                }
+                if (document.getElementById("stepRandom").checked) state.notes.sort(() => Math.random() - 0.5); 
                 renderStep(); 
                 playNotes(state.notes); 
             }
@@ -250,22 +264,44 @@
 
     function renderStep() {
         const mode = document.getElementById("trainMode").value, sid = MODE_STEPS[mode][state.stepIdx];
-        state.isAnsMode = false; state.userInputs = []; const sCont = document.getElementById("slotContainer");
-        document.getElementById("answerArea").style.visibility = "hidden"; sCont.innerHTML = "";
-        state.notes.forEach((_, i) => { const s = document.createElement("div"); s.className = "input-slot"; s.id = "slot" + i; sCont.appendChild(s); });
+        state.isAnsMode = false; state.userInputs = []; 
+        const sCont = document.getElementById("slotContainer");
+        const qArea = document.getElementById("questionArea");
         
-        const inst = document.getElementById("instruction"), qArea = document.getElementById("questionArea");
+        document.getElementById("answerArea").style.visibility = "hidden"; 
+        sCont.innerHTML = "";
+        qArea.innerHTML = "";
+
+        state.notes.forEach((nIdx, i) => {
+            const q = document.createElement("div");
+            q.className = "note-q-item";
+            q.onclick = () => playSingle(nIdx);
+            let qText = "";
+            switch(sid) {
+                case 10: case 30: case 50: qText = namArr[nIdx]; break;
+                case 11: case 40: case 52: qText = solArr[nIdx]; break;
+                case 31: case 41: case 51: qText = numArr[nIdx]; break;
+            }
+            q.innerText = qText;
+            qArea.appendChild(q);
+
+            const s = document.createElement("div");
+            s.className = "input-slot";
+            s.id = "slot" + i;
+            sCont.appendChild(s);
+        });
         
+        const inst = document.getElementById("instruction");
         switch(sid) {
-            case 10: inst.innerText = "音名 ➔ 唱名"; qArea.innerText = state.notes.map(n => namArr[n]).join(" "); break;
-            case 11: inst.innerText = "唱名 ➔ 音名"; qArea.innerText = state.notes.map(n => solArr[n]).join(" "); break;
-            case 30: inst.innerText = "音名 ➔ 簡譜"; qArea.innerText = state.notes.map(n => namArr[n]).join(" "); break;
-            case 31: inst.innerText = "簡譜 ➔ 音名"; qArea.innerText = state.notes.map(n => numArr[n]).join(" "); break;
-            case 40: inst.innerText = "唱名 ➔ 簡譜"; qArea.innerText = state.notes.map(n => solArr[n]).join(" "); break;
-            case 41: inst.innerText = "簡譜 ➔ 唱名"; qArea.innerText = state.notes.map(n => numArr[n]).join(" "); break;
-            case 50: inst.innerText = "音名 ➔ 簡譜"; qArea.innerText = state.notes.map(n => namArr[n]).join(" "); break;
-            case 51: inst.innerText = "簡譜 ➔ 唱名"; qArea.innerText = state.notes.map(n => numArr[n]).join(" "); break;
-            case 52: inst.innerText = "唱名 ➔ 音名"; qArea.innerText = state.notes.map(n => solArr[n]).join(" "); break;
+            case 10: inst.innerText = "音名 ➔ 唱名"; break;
+            case 11: inst.innerText = "唱名 ➔ 音名"; break;
+            case 30: inst.innerText = "音名 ➔ 簡譜"; break;
+            case 31: inst.innerText = "簡譜 ➔ 音名"; break;
+            case 40: inst.innerText = "唱名 ➔ 簡譜"; break;
+            case 41: inst.innerText = "簡譜 ➔ 唱名"; break;
+            case 50: inst.innerText = "音名 ➔ 簡譜"; break;
+            case 51: inst.innerText = "簡譜 ➔ 唱名"; break;
+            case 52: inst.innerText = "唱名 ➔ 音名"; break;
         }
         renderKeyboard(); startTimer(); document.getElementById("mainBtn").innerText = "檢查答案";
     }
@@ -292,7 +328,22 @@
         let keys = [...(isSol ? solArr : (isNum ? numArr : namArr))];
         
         if (document.getElementById("kbRandom").checked) keys.sort(() => Math.random() - 0.5);
-        keys.forEach(kText => { const k = document.createElement("div"); k.className = "key"; k.innerText = kText; k.onclick = () => { if (!state.isAnsMode && state.userInputs.length < state.notes.length) { state.userInputs.push(kText); updateSlots(); }}; kb.appendChild(k); });
+        keys.forEach(kText => { 
+            const k = document.createElement("div"); 
+            k.className = "key"; 
+            k.innerText = kText; 
+            k.onclick = () => { 
+                if (!state.isAnsMode && state.userInputs.length < state.notes.length) { 
+                    state.userInputs.push(kText); 
+                    updateSlots();
+                    if (document.getElementById("playAnsSound").checked) {
+                        let idx = isSol ? solArr.indexOf(kText) : (isNum ? numArr.indexOf(kText) : namArr.indexOf(kText));
+                        playSingle(idx);
+                    }
+                }
+            }; 
+            kb.appendChild(k); 
+        });
         const del = document.createElement("div"); del.className = "key control"; del.innerText = "⌫"; del.onclick = () => { if(!state.isAnsMode) { state.userInputs.pop(); updateSlots(); }}; kb.appendChild(del);
     }
 
