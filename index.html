@@ -191,7 +191,7 @@
                     </div>
                 </div>
             </div>
-            <button onclick="resetApp()" style="width:100%; padding:12px; background:var(--success); color:white; border:none; border-radius:10px; font-weight:bold;">啟動訓練</button>
+            <button onclick="applySettings()" style="width:100%; padding:12px; background:var(--success); color:white; border:none; border-radius:10px; font-weight:bold;">完成設定</button>
         </div>
 
         <div class="timer-bar-container" id="timerBarCont"><div id="timerBar"></div></div>
@@ -211,7 +211,7 @@
             <details class="changelog">
                 <summary>📜 更新日誌與工作紀錄</summary>
                 <ul>
-                    <li><strong>v4.1.2</strong>: 邏輯修正：回歸「三向循環」樂理定義，指引文字更新為「點擊下方綠色按鈕開始」。</li>
+                    <li><strong>v4.1.2</strong>: 邏輯調整：設定按鈕改為「完成設定」並於點擊後回到啟動首頁。</li>
                     <li><strong>v4.1.1</strong>: 效果更迭：改為「靈魂漂浮」效果（行動裝置優化）。</li>
                     <li><strong>v4.0.12</strong>: 衝刺進化：改為真隨機機率觸發衝刺 (1/N)。</li>
                 </ul>
@@ -274,9 +274,33 @@
             const modeSelect = document.getElementById("trainMode");
             const modeName = modeSelect.options[modeSelect.selectedIndex].text;
             document.getElementById("instruction").innerHTML = `點擊下方綠色按鈕開始<br><span class="mode-hint">目前模式：${modeName}</span>`;
+            // 清除可能殘留的顯示區域
+            document.getElementById("questionArea").innerHTML = "";
+            document.getElementById("slotContainer").innerHTML = "";
+            document.getElementById("mainBtn").innerText = "開始練習";
         }
         
         if(state.notes.length > 0) startTimer();
+    }
+
+    // v4.1.2: 完成設定並回到首頁
+    function applySettings() {
+        state.notes = [];
+        state.stepIdx = 0;
+        state.questionCounter = 0;
+        state.isAnsMode = false;
+        
+        // 停止所有計時
+        clearInterval(state.timerInt);
+        clearInterval(state.sessionTimerInt);
+        state.sessionStartTime = null;
+        document.getElementById("sessionTimer").innerText = "Practice Time: 00:00";
+        document.getElementById("timerBarCont").style.display = "none";
+        
+        // 關閉面板並更新首頁顯示
+        document.getElementById("settingsPanel").style.display = "none";
+        updateModeUI();
+        updateStatusDisplay();
     }
 
     function updateSessionTimer() { if (!state.sessionStartTime) return; const diff = Math.floor((Date.now() - state.sessionStartTime) / 1000); const mm = String(Math.floor(diff / 60)).padStart(2, '0'), ss = String(diff % 60).padStart(2, '0'); document.getElementById("sessionTimer").innerText = `Practice Time: ${mm}:${ss}`; }
@@ -295,7 +319,7 @@
         });
     }
 
-    function resetApp() { state.notes = []; state.stepIdx = 0; state.questionCounter = 0; state.isAnsMode = false; clearInterval(state.timerInt); clearInterval(state.sessionTimerInt); state.sessionStartTime = null; ensureSessionTimer(); document.getElementById("settingsPanel").style.display = "none"; handleClick(); updateStatusDisplay(); }
+    function resetApp() { applySettings(); } // 修改原 resetApp 調用 applySettings
 
     function handleClick() {
         ensureSessionTimer(); const mode = document.getElementById("trainMode").value, steps = MODE_STEPS[mode];
