@@ -8,6 +8,7 @@
         :root { --primary: #3498db; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; }
         body { font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: var(--bg); margin: 0; min-height: 100vh; overflow-x: hidden; }
         
+        /* 靈魂漂浮動畫 */
         .soul-note {
             position: fixed;
             pointer-events: none;
@@ -19,7 +20,6 @@
             user-select: none;
             animation: soulFloatAnim 2s ease-out forwards;
         }
-        
         @keyframes soulFloatAnim {
             0% { transform: translateY(0) scale(1); opacity: 0.3; }
             100% { transform: translateY(-120px) scale(1.5); opacity: 0; }
@@ -39,11 +39,13 @@
         .setting-group { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
         .group-title { font-weight: 800; color: var(--primary); display: block; margin-bottom: 8px; font-size: 1.1em; }
         .setting-item { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; }
+        
         #refList { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; gap: 4px; overflow-x: auto; }
         .ref-item { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 42px; background: #fff; padding: 8px 2px; border-radius: 10px; border: 1px solid #eee; cursor: pointer; }
         .ref-note-name { font-weight: bold; color: var(--primary); font-size: 1.1em; }
         .ref-sol-name { font-weight: 800; color: #2c3e50; font-size: 0.95em; }
         .ref-num-name { font-weight: bold; color: #e67e22; font-size: 0.9em; }
+        
         .concept-card { background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--primary); font-size: 0.95em; line-height: 1.4; }
         
         .timer-bar-container { width: 100%; height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-bottom: 10px; display: none; }
@@ -129,7 +131,7 @@
             <span class="group-title">📚 樂理核心定義</span>
             <div class="concept-card"><b>1. 固定唱名</b>：C=Do, D=Re, E=Mi, F=Fa, G=Sol, A=La, B=Si。</div>
             <div class="concept-card" style="border-left-color: var(--success);"><b>2. 簡譜對照</b>：Do=1, Re=2, Mi=3, Fa=4, Sol=5, La=6, Si=7。</div>
-            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 三向循環</b>：音名 ➔ 簡譜 ➔ 唱名 ➔ 音名。這是一個完整的閉環練習。</div>
+            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 三向循環</b>：音名 ➔ 簡譜 ➔ 唱名 ➔ 音名。這是一個完整的閉環反應練習。</div>
             <span class="group-title">音名唱名簡譜對照表</span>
             <div id="refList"></div>
         </div>
@@ -161,7 +163,8 @@
                 </div>
                 <div class="setting-item"><label>基準調性</label>
                     <select id="baseMode" onchange="updateStatusDisplay()">
-                        <option value="major" selected>大調 (Major)</option><option value="minor">小調 (Minor)</option>
+                        <option value="major" selected>大調 (Major)</option>
+                        <option value="minor">自然小調 (Natural Minor)</option>
                     </select>
                 </div>
             </div>
@@ -212,9 +215,9 @@
             <details class="changelog">
                 <summary>📜 更新日誌與工作紀錄</summary>
                 <ul>
-                    <li><strong>v4.1.2</strong>: 邏輯修正：確保「完成設定」後計時器徹底重置，並在點擊綠色按鈕後正確啟動。修正倒數條凍結 Bug。</li>
-                    <li><strong>v4.1.1</strong>: 效果更迭：改為「靈魂漂浮」效果（行動裝置優化）。</li>
+                    <li><strong>v4.1.2</strong>: 綜合優化定版：C 大調強制顯示、術語修正為「自然小調」、首頁置中美化、靈魂漂浮特效實作、設定邏輯重置優化。</li>
                     <li><strong>v4.0.12</strong>: 衝刺進化：改為真隨機機率觸發衝刺 (1/N)。</li>
+                    <li><strong>v4.0.11</strong>: 個人化：新增「Sol / So」顯示切換。</li>
                 </ul>
             </details>
         </footer>
@@ -257,20 +260,16 @@
 
     function updateStatusDisplay() {
         const oct = document.getElementById("baseOctave"), rootSelect = document.getElementById("baseRoot"), mode = document.getElementById("baseMode"), statusEl = document.getElementById("baseStatus");
-        const isDefault = (oct.value === "0" && rootSelect.value === "0" && mode.value === "major");
-        if (isDefault) statusEl.innerText = "";
-        else {
-            const octText = oct.options[oct.selectedIndex].text, rootText = rootSelect.options[rootSelect.selectedIndex].text, modeVal = mode.value;
-            let formattedDisplay = (modeVal === "minor") ? (rootText.toLowerCase() + " 小調") : (rootText + " 大調");
-            statusEl.innerText = `[ ${formattedDisplay} · ${octText} ]`;
-        }
+        const octText = oct.options[oct.selectedIndex].text, rootText = rootSelect.options[rootSelect.selectedIndex].text, modeVal = mode.value;
+        // v4.1.2: 統一顯示，不再判斷 isDefault
+        let formattedDisplay = (modeVal === "minor") ? (rootText.toLowerCase() + " 自然小調") : (rootText + " 大調");
+        statusEl.innerText = `[ ${formattedDisplay} · ${octText} ]`;
     }
 
     function togglePanel(id) { const p = document.getElementById(id); const isShow = (p.style.display === "block"); document.querySelectorAll('.info-panel').forEach(el => el.style.display = 'none'); p.style.display = isShow ? 'none' : 'block'; }
     
     function updateModeUI() { 
         document.getElementById("sprintNGroup").style.display = (document.getElementById("timerMode").value === 'sprint') ? 'flex' : 'none';
-        
         if (state.notes.length === 0) {
             const modeSelect = document.getElementById("trainMode");
             const modeName = modeSelect.options[modeSelect.selectedIndex].text;
@@ -279,36 +278,20 @@
             document.getElementById("slotContainer").innerHTML = "";
             document.getElementById("mainBtn").innerText = "開始練習";
         }
-        
         if(state.notes.length > 0) startTimer();
     }
 
     function applySettings() {
-        // 物理清除定時器
-        clearInterval(state.timerInt);
-        clearInterval(state.sessionTimerInt);
-        state.timerInt = null;
-        state.sessionTimerInt = null;
-        state.sessionStartTime = null;
-
-        // 重置狀態
-        state.notes = [];
-        state.stepIdx = 0;
-        state.questionCounter = 0;
-        state.isAnsMode = false;
-        
-        // 重置 UI
+        clearInterval(state.timerInt); clearInterval(state.sessionTimerInt);
+        state.timerInt = state.sessionTimerInt = state.sessionStartTime = null;
+        state.notes = []; state.stepIdx = 0; state.questionCounter = 0; state.isAnsMode = false;
         document.getElementById("sessionTimer").innerText = "Practice Time: 00:00";
         document.getElementById("timerBarCont").style.display = "none";
         document.getElementById("answerArea").style.visibility = "hidden";
-        
-        // 凍結倒數條
         const bar = document.getElementById("timerBar");
         if (bar) { bar.style.transition = 'none'; bar.style.width = '100%'; }
-        
         document.getElementById("settingsPanel").style.display = "none";
-        updateModeUI();
-        updateStatusDisplay();
+        updateModeUI(); updateStatusDisplay();
     }
 
     function updateSessionTimer() { 
@@ -319,10 +302,7 @@
     }
 
     function ensureSessionTimer() { 
-        if (!state.sessionStartTime) { 
-            state.sessionStartTime = Date.now(); 
-            state.sessionTimerInt = setInterval(updateSessionTimer, 1000); 
-        } 
+        if (!state.sessionStartTime) { state.sessionStartTime = Date.now(); state.sessionTimerInt = setInterval(updateSessionTimer, 1000); } 
     }
 
     function playNotes(targetIndices, force = false) {
@@ -339,18 +319,12 @@
     }
 
     function handleClick() {
-        ensureSessionTimer(); 
-        const mode = document.getElementById("trainMode").value, steps = MODE_STEPS[mode];
+        ensureSessionTimer(); const mode = document.getElementById("trainMode").value, steps = MODE_STEPS[mode];
         if (state.notes.length === 0) { generateNewTask(); return; }
-        
         if (!state.isAnsMode) {
-            state.isAnsMode = true; 
-            clearInterval(state.timerInt);
-            
-            // 物理凍結倒數條寬度
+            state.isAnsMode = true; clearInterval(state.timerInt);
             const bar = document.getElementById("timerBar");
             if (bar) { bar.style.transition = 'none'; bar.style.width = window.getComputedStyle(bar).width; }
-
             const sid = steps[state.stepIdx]; let correct = [];
             switch(sid) {
                 case 10: correct = state.notes.map(n => solArr[n]); break;
@@ -369,11 +343,9 @@
             });
             if (document.getElementById("playCorrectSound").checked) playNotes(state.notes, true);
             document.getElementById("answerArea").innerText = "正解：" + correct.join(" "); 
-            document.getElementById("answerArea").style.visibility = "visible"; 
-            document.getElementById("mainBtn").innerText = "下一步驟";
+            document.getElementById("answerArea").style.visibility = "visible"; document.getElementById("mainBtn").innerText = "下一步驟";
         } else {
-            state.stepIdx++; 
-            if (state.stepIdx >= steps.length) generateNewTask(); 
+            state.stepIdx++; if (state.stepIdx >= steps.length) generateNewTask(); 
             else { if (document.getElementById("stepRandom").checked) state.notes.sort(() => Math.random() - 0.5); renderStep(); playNotes(state.notes); }
         }
     }
@@ -390,10 +362,8 @@
 
     function renderStep() {
         const mode = document.getElementById("trainMode").value, sid = MODE_STEPS[mode][state.stepIdx];
-        state.isAnsMode = false; state.userInputs = []; 
-        const sCont = document.getElementById("slotContainer"), qArea = document.getElementById("questionArea");
+        state.isAnsMode = false; state.userInputs = []; const sCont = document.getElementById("slotContainer"), qArea = document.getElementById("questionArea");
         document.getElementById("answerArea").style.visibility = "hidden"; sCont.innerHTML = ""; qArea.innerHTML = "";
-        
         state.notes.forEach((nIdx, i) => {
             const q = document.createElement("div"); q.className = "note-q-item"; q.onclick = () => playSingle(nIdx);
             let qText = "";
@@ -405,7 +375,6 @@
             q.innerText = qText; qArea.appendChild(q);
             const s = document.createElement("div"); s.className = "input-slot"; s.id = "slot" + i; sCont.appendChild(s);
         });
-        
         const inst = document.getElementById("instruction");
         let instText = "";
         switch(sid) {
@@ -425,21 +394,13 @@
     }
 
     function startTimer() {
-        clearInterval(state.timerInt); 
-        const mode = document.getElementById("timerMode").value, bar = document.getElementById("timerBar"), cont = document.getElementById("timerBarCont");
+        clearInterval(state.timerInt); const mode = document.getElementById("timerMode").value, bar = document.getElementById("timerBar"), cont = document.getElementById("timerBarCont");
         if (mode === 'off') { cont.style.display = "none"; return; }
-        
         let isTimed = (mode === 'always') || (mode === 'sprint' && state.isCurrentSprint);
         if (!isTimed) { cont.style.display = "none"; return; }
-        
         bar.style.transition = "none"; bar.style.width = "100%"; cont.style.display = "block";
         const sec = parseInt(document.getElementById("timerSec").value);
-        
-        setTimeout(() => { 
-            bar.style.transition = `width ${sec}s linear`; 
-            bar.style.width = "0%"; 
-        }, 50);
-        
+        setTimeout(() => { bar.style.transition = `width ${sec}s linear`; bar.style.width = "0%"; }, 50);
         state.timerInt = setInterval(() => { if (!state.isAnsMode) handleClick(); }, sec * 1000);
     }
 
