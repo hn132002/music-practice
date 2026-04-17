@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>橙色的樂理強化 v4.0.7</title>
+    <title>橙色的樂理強化 v4.0.11</title>
     <style>
         :root { --primary: #3498db; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; }
         body { font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: var(--bg); margin: 0; }
@@ -11,7 +11,11 @@
         .top-nav { position: absolute; top: 15px; width: calc(100% - 40px); display: flex; justify-content: space-between; padding: 0 5px; z-index: 10; }
         .nav-item { cursor: pointer; font-size: 1.3em; filter: grayscale(0.3); transition: 0.2s; text-decoration: none; color: #333; }
         .app-title { color: var(--primary); margin: 0; font-size: 1.4em; font-weight: 900; }
-        .session-timer { background: #eef2f7; color: #34495e; padding: 6px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; font-family: 'Courier New', monospace; display: inline-block; margin-top: 8px; margin-bottom: 12px; border: 1px solid #dcdde1; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+        
+        .timer-group { margin-bottom: 12px; }
+        .session-timer { background: #eef2f7; color: #34495e; padding: 6px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; font-family: 'Courier New', monospace; display: inline-block; border: 1px solid #dcdde1; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+        .base-status { font-size: 0.75em; color: #e67e22; font-weight: bold; margin-top: 5px; height: 1.2em; letter-spacing: 1px; }
+
         .version-tag { color: #95a5a6; font-size: 0.7em; font-family: monospace; margin-bottom: 5px; }
         .info-panel { background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; display: none; font-size: 0.85em; border: 1px solid #ddd; max-height: 70vh; overflow-y: auto; }
         .setting-group { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
@@ -40,7 +44,6 @@
         .key.control { background: #95a5a6; color: white; grid-column: span 7; margin-top: 4px; padding: 10px 0; font-size: 1.2em; }
         #mainBtn { padding: 16px; font-size: 1.2em; cursor: pointer; border: none; border-radius: 14px; font-weight: bold; width: 100%; color: white; background: var(--success); margin-top: 15px; box-shadow: 0 4px 0 #27ae60; outline: none; }
         
-        /* 正解文字樣式與懸停效果 */
         .ans-text { margin-top: 8px; font-weight: bold; color: #7f8c8d; height: 1.2em; visibility: hidden; cursor: pointer; transition: color 0.2s; }
         .ans-text:hover { color: var(--primary); }
         
@@ -61,14 +64,18 @@
         </div>
 
         <h1 class="app-title">橙色的樂理強化</h1>
-        <div class="version-tag">Version 4.0.7</div>
-        <div id="sessionTimer" class="session-timer">Practice Time: 00:00</div>
+        <div class="version-tag">Version 4.0.11</div>
+        
+        <div class="timer-group">
+            <div id="sessionTimer" class="session-timer">Practice Time: 00:00</div>
+            <div id="baseStatus" class="base-status"></div>
+        </div>
 
         <div id="pianoPanel" class="info-panel">
             <span class="group-title">📚 樂理核心定義</span>
             <div class="concept-card"><b>1. 固定唱名</b>：C=Do, D=Re, E=Mi, F=Fa, G=Sol, A=La, B=Si。</div>
             <div class="concept-card" style="border-left-color: var(--success);"><b>2. 簡譜對照</b>：Do=1, Re=2, Mi=3, Fa=4, Sol=5, La=6, Si=7。</div>
-            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 三向循環</b>：音名 ➔ 簡譜 ➔ 唱名 ➔ 音名。這是一個完整的閉環練習。</div>
+            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 移調練習</b>：支援 24 調性切換，大調大寫，小調小寫。</div>
             <span class="group-title">音名唱名簡譜對照表</span>
             <div id="refList"></div>
         </div>
@@ -86,9 +93,34 @@
                     </select>
                 </div>
                 <div class="setting-item"><label>音符數量</label><input type="number" id="noteCount" value="4" min="1" max="14" style="width:45px"></div>
+                
                 <div class="setting-item">
-                    <label>基準音域</label>
-                    <select id="baseOctave"><option value="-1">低八度</option><option value="0" selected>標準 (C4)</option><option value="1">高八度</option></select>
+                    <label>基準音高</label>
+                    <select id="baseOctave" onchange="updateStatusDisplay()">
+                        <option value="-1">低八度</option>
+                        <option value="0" selected>標準 (C4)</option>
+                        <option value="1">高八度</option>
+                    </select>
+                </div>
+                
+                <div class="setting-item">
+                    <label>基準根音</label>
+                    <select id="baseRoot" onchange="updateStatusDisplay()">
+                        <option value="0" selected>C</option><option value="1">C# / Db</option>
+                        <option value="2">D</option><option value="3">D# / Eb</option>
+                        <option value="4">E</option><option value="5">F</option>
+                        <option value="6">F# / Gb</option><option value="7">G</option>
+                        <option value="8">G# / Ab</option><option value="9">A</option>
+                        <option value="10">A# / Bb</option><option value="11">B</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label>基準調性</label>
+                    <select id="baseMode" onchange="updateStatusDisplay()">
+                        <option value="major" selected>大調 (Major)</option>
+                        <option value="minor">小調 (Minor)</option>
+                    </select>
                 </div>
             </div>
             
@@ -114,6 +146,17 @@
                 <div class="setting-item"><label>作答播放聲音</label><input type="checkbox" id="playAnsSound" checked></div>
                 <div class="setting-item"><label>正解顯示播放</label><input type="checkbox" id="playCorrectSound" checked></div>
             </div>
+
+            <div class="setting-group">
+                <span class="group-title">介面標記</span>
+                <div class="setting-item">
+                    <label>唱名(5) 標記</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="radio" name="solType" id="solTypeSol" checked onchange="updateSolType()"> <label for="solTypeSol">Sol</label>
+                        <input type="radio" name="solType" id="solTypeSo" onchange="updateSolType()"> <label for="solTypeSo">So</label>
+                    </div>
+                </div>
+            </div>
             <button onclick="resetApp()" style="width:100%; padding:12px; background:var(--success); color:white; border:none; border-radius:10px; font-weight:bold;">啟動訓練</button>
         </div>
 
@@ -134,21 +177,25 @@
             <details class="changelog">
                 <summary>📜 更新日誌與工作紀錄</summary>
                 <ul>
-                    <li><strong>v4.0.7</strong>: 交互強化：點擊正解顯示文字可重新播放該題音階，並加入懸停回饋。</li>
-                    <li><strong>v4.0.6</strong>: 功能新增：增加「正解顯示播放」聲音開關。</li>
-                    <li><strong>v4.0.5</strong>: 介面優化：題目與答案格對齊排列。</li>
+                    <li><strong>v4.0.11</strong>: 個人化優化：新增「Sol / So」顯示切換開關，全介面即時同步。</li>
+                    <li><strong>v4.0.10</strong>: 顯示優化：大小調標示邏輯更新（小調小寫）。</li>
+                    <li><strong>v4.0.9</strong>: 調性擴充：支援 24 個關係大小調。</li>
                 </ul>
             </details>
         </footer>
     </div>
 
 <script>
-    const solArr = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si"], 
-          namArr = ["C", "D", "E", "F", "G", "A", "B"], 
-          numArr = ["1", "2", "3", "4", "5", "6", "7"],
-          freqs = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88];
+    let solArr = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si"];
+    const namArr = ["C", "D", "E", "F", "G", "A", "B"], 
+          numArr = ["1", "2", "3", "4", "5", "6", "7"];
     
-    let state = { notes: [], userInputs: [], stepIdx: 0, isAnsMode: false, currentJump: 0, ctx: null, timerInt: null, sessionStartTime: null, sessionTimerInt: null, questionCounter: 0 };
+    const INTERVALS = {
+        major: [0, 2, 4, 5, 7, 9, 11],
+        minor: [0, 2, 3, 5, 7, 8, 10]
+    };
+
+    let state = { notes: [], userInputs: [], stepIdx: 0, isAnsMode: false, ctx: null, timerInt: null, sessionStartTime: null, sessionTimerInt: null, questionCounter: 0 };
     
     const MODE_STEPS = { 
         map_ns: [10, 11], 
@@ -158,7 +205,23 @@
     };
 
     window.onload = () => {
-        const ref = document.getElementById("refList"); ref.innerHTML = "";
+        renderRefList();
+        updateModeUI(); 
+        renderKeyboard(); 
+        updateStatusDisplay();
+    };
+
+    function updateSolType() {
+        const isSo = document.getElementById("solTypeSo").checked;
+        solArr[4] = isSo ? "So" : "Sol";
+        renderRefList();
+        renderKeyboard();
+        if (state.notes.length > 0) renderStep(); // 如果正在練習中，即時更新題目顯示
+    }
+
+    function renderRefList() {
+        const ref = document.getElementById("refList"); 
+        ref.innerHTML = "";
         namArr.forEach((n, i) => { 
             ref.innerHTML += `
                 <div class="ref-item" onclick="playSingle(${i})">
@@ -167,8 +230,26 @@
                     <div class="ref-num-name">${numArr[i]}</div>
                 </div>`; 
         });
-        updateModeUI(); renderKeyboard();
-    };
+    }
+
+    function updateStatusDisplay() {
+        const oct = document.getElementById("baseOctave");
+        const rootSelect = document.getElementById("baseRoot");
+        const mode = document.getElementById("baseMode");
+        const statusEl = document.getElementById("baseStatus");
+        
+        const isDefault = (oct.value === "0" && rootSelect.value === "0" && mode.value === "major");
+        
+        if (isDefault) {
+            statusEl.innerText = "";
+        } else {
+            const octText = oct.options[oct.selectedIndex].text;
+            let rootText = rootSelect.options[rootSelect.selectedIndex].text;
+            const modeVal = mode.value;
+            let formattedDisplay = (modeVal === "minor") ? (rootText.toLowerCase() + " 小調") : (rootText + " 大調");
+            statusEl.innerText = `[ ${formattedDisplay} · ${octText} ]`;
+        }
+    }
 
     function togglePanel(id) { const p = document.getElementById(id); const isShow = (p.style.display === "block"); document.querySelectorAll('.info-panel').forEach(el => el.style.display = 'none'); p.style.display = isShow ? 'none' : 'block'; }
     function updateModeUI() { 
@@ -188,19 +269,30 @@
 
     function playNotes(targetIndices, force = false) {
         if (!force && !document.getElementById("playQuestSound").checked) return;
-
         if (!state.ctx) state.ctx = new AudioContext();
         if (state.ctx.state === 'suspended') state.ctx.resume();
-        const now = state.ctx.currentTime, oct = parseInt(document.getElementById("baseOctave").value);
+        
+        const now = state.ctx.currentTime, 
+              octShift = parseInt(document.getElementById("baseOctave").value),
+              rootOffset = parseInt(document.getElementById("baseRoot").value),
+              mode = document.getElementById("baseMode").value;
+
         targetIndices.forEach((idx, i) => {
             const osc = state.ctx.createOscillator(), gain = state.ctx.createGain();
-            osc.frequency.setValueAtTime(freqs[((idx % 7) + 7) % 7] * Math.pow(2, Math.floor(idx / 7) + oct), now + i * 0.4);
-            gain.gain.setValueAtTime(0, now + i * 0.4); gain.gain.linearRampToValueAtTime(0.1, now + i * 0.4 + 0.01); gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.4 + 0.5);
-            osc.connect(gain); gain.connect(state.ctx.destination); osc.start(now + i * 0.4); osc.stop(now + i * 0.4 + 0.6);
+            const degree = ((idx % 7) + 7) % 7;
+            const octaveOffset = Math.floor(idx / 7) + octShift;
+            const semitones = rootOffset + INTERVALS[mode][degree] + (octaveOffset * 12);
+            const freq = 261.63 * Math.pow(2, semitones / 12);
+            osc.frequency.setValueAtTime(freq, now + i * 0.4);
+            gain.gain.setValueAtTime(0, now + i * 0.4); 
+            gain.gain.linearRampToValueAtTime(0.1, now + i * 0.4 + 0.01); 
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.4 + 0.5);
+            osc.connect(gain); gain.connect(state.ctx.destination); 
+            osc.start(now + i * 0.4); osc.stop(now + i * 0.4 + 0.6);
         });
     }
 
-    function resetApp() { state.notes = []; state.stepIdx = 0; state.questionCounter = 0; state.isAnsMode = false; clearInterval(state.timerInt); clearInterval(state.sessionTimerInt); state.sessionStartTime = null; ensureSessionTimer(); document.getElementById("settingsPanel").style.display = "none"; handleClick(); }
+    function resetApp() { state.notes = []; state.stepIdx = 0; state.questionCounter = 0; state.isAnsMode = false; clearInterval(state.timerInt); clearInterval(state.sessionTimerInt); state.sessionStartTime = null; ensureSessionTimer(); document.getElementById("settingsPanel").style.display = "none"; handleClick(); updateStatusDisplay(); }
 
     function handleClick() {
         ensureSessionTimer(); 
@@ -231,10 +323,7 @@
                 }
             });
 
-            if (document.getElementById("playCorrectSound").checked) {
-                playNotes(state.notes, true);
-            }
-
+            if (document.getElementById("playCorrectSound").checked) playNotes(state.notes, true);
             document.getElementById("answerArea").innerText = "正解：" + correct.join(" "); 
             document.getElementById("answerArea").style.visibility = "visible"; 
             document.getElementById("mainBtn").innerText = "下一步驟";
@@ -322,11 +411,9 @@
     function renderKeyboard() {
         const kb = document.getElementById("keyboard"), mode = document.getElementById("trainMode").value, sid = MODE_STEPS[mode][state.stepIdx];
         kb.innerHTML = "";
-        
         const isSol = (sid === 10 || sid === 41 || sid === 51);
         const isNum = (sid === 30 || sid === 40 || sid === 50);
         let keys = [...(isSol ? solArr : (isNum ? numArr : namArr))];
-        
         if (document.getElementById("kbRandom").checked) keys.sort(() => Math.random() - 0.5);
         keys.forEach(kText => { 
             const k = document.createElement("div"); 
