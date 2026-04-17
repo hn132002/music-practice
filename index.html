@@ -45,6 +45,7 @@
         .ref-sol-name { font-weight: 800; color: #2c3e50; font-size: 0.95em; }
         .ref-num-name { font-weight: bold; color: #e67e22; font-size: 0.9em; }
         .concept-card { background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--primary); font-size: 0.95em; line-height: 1.4; }
+        
         .timer-bar-container { width: 100%; height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-bottom: 10px; display: none; }
         #timerBar { height: 100%; background: var(--error); width: 100%; transition: width linear; }
         
@@ -211,7 +212,7 @@
             <details class="changelog">
                 <summary>📜 更新日誌與工作紀錄</summary>
                 <ul>
-                    <li><strong>v4.1.2</strong>: 邏輯調整：設定按鈕改為「完成設定」並於點擊後回到啟動首頁。</li>
+                    <li><strong>v4.1.2</strong>: 邏輯修正：確保「完成設定」後計時器徹底重置，並在點擊綠色按鈕後正確啟動。修正倒數條凍結 Bug。</li>
                     <li><strong>v4.1.1</strong>: 效果更迭：改為「靈魂漂浮」效果（行動裝置優化）。</li>
                     <li><strong>v4.0.12</strong>: 衝刺進化：改為真隨機機率觸發衝刺 (1/N)。</li>
                 </ul>
@@ -274,7 +275,6 @@
             const modeSelect = document.getElementById("trainMode");
             const modeName = modeSelect.options[modeSelect.selectedIndex].text;
             document.getElementById("instruction").innerHTML = `點擊下方綠色按鈕開始<br><span class="mode-hint">目前模式：${modeName}</span>`;
-            // 清除可能殘留的顯示區域
             document.getElementById("questionArea").innerHTML = "";
             document.getElementById("slotContainer").innerHTML = "";
             document.getElementById("mainBtn").innerText = "開始練習";
@@ -283,28 +283,47 @@
         if(state.notes.length > 0) startTimer();
     }
 
-    // v4.1.2: 完成設定並回到首頁
     function applySettings() {
+        // 物理清除定時器
+        clearInterval(state.timerInt);
+        clearInterval(state.sessionTimerInt);
+        state.timerInt = null;
+        state.sessionTimerInt = null;
+        state.sessionStartTime = null;
+
+        // 重置狀態
         state.notes = [];
         state.stepIdx = 0;
         state.questionCounter = 0;
         state.isAnsMode = false;
         
-        // 停止所有計時
-        clearInterval(state.timerInt);
-        clearInterval(state.sessionTimerInt);
-        state.sessionStartTime = null;
+        // 重置 UI
         document.getElementById("sessionTimer").innerText = "Practice Time: 00:00";
         document.getElementById("timerBarCont").style.display = "none";
+        document.getElementById("answerArea").style.visibility = "hidden";
         
-        // 關閉面板並更新首頁顯示
+        // 凍結倒數條
+        const bar = document.getElementById("timerBar");
+        if (bar) { bar.style.transition = 'none'; bar.style.width = '100%'; }
+        
         document.getElementById("settingsPanel").style.display = "none";
         updateModeUI();
         updateStatusDisplay();
     }
 
-    function updateSessionTimer() { if (!state.sessionStartTime) return; const diff = Math.floor((Date.now() - state.sessionStartTime) / 1000); const mm = String(Math.floor(diff / 60)).padStart(2, '0'), ss = String(diff % 60).padStart(2, '0'); document.getElementById("sessionTimer").innerText = `Practice Time: ${mm}:${ss}`; }
-    function ensureSessionTimer() { if (!state.sessionStartTime) { state.sessionStartTime = Date.now(); state.sessionTimerInt = setInterval(updateSessionTimer, 1000); } }
+    function updateSessionTimer() { 
+        if (!state.sessionStartTime) return; 
+        const diff = Math.floor((Date.now() - state.sessionStartTime) / 1000); 
+        const mm = String(Math.floor(diff / 60)).padStart(2, '0'), ss = String(diff % 60).padStart(2, '0'); 
+        document.getElementById("sessionTimer").innerText = `Practice Time: ${mm}:${ss}`; 
+    }
+
+    function ensureSessionTimer() { 
+        if (!state.sessionStartTime) { 
+            state.sessionStartTime = Date.now(); 
+            state.sessionTimerInt = setInterval(updateSessionTimer, 1000); 
+        } 
+    }
 
     function playNotes(targetIndices, force = false) {
         if (!force && !document.getElementById("playQuestSound").checked) return;
@@ -319,13 +338,19 @@
         });
     }
 
-    function resetApp() { applySettings(); } // 修改原 resetApp 調用 applySettings
-
     function handleClick() {
-        ensureSessionTimer(); const mode = document.getElementById("trainMode").value, steps = MODE_STEPS[mode];
+        ensureSessionTimer(); 
+        const mode = document.getElementById("trainMode").value, steps = MODE_STEPS[mode];
         if (state.notes.length === 0) { generateNewTask(); return; }
+        
         if (!state.isAnsMode) {
-            state.isAnsMode = true; clearInterval(state.timerInt);
+            state.isAnsMode = true; 
+            clearInterval(state.timerInt);
+            
+            // 物理凍結倒數條寬度
+            const bar = document.getElementById("timerBar");
+            if (bar) { bar.style.transition = 'none'; bar.style.width = window.getComputedStyle(bar).width; }
+
             const sid = steps[state.stepIdx]; let correct = [];
             switch(sid) {
                 case 10: correct = state.notes.map(n => solArr[n]); break;
@@ -344,9 +369,11 @@
             });
             if (document.getElementById("playCorrectSound").checked) playNotes(state.notes, true);
             document.getElementById("answerArea").innerText = "正解：" + correct.join(" "); 
-            document.getElementById("answerArea").style.visibility = "visible"; document.getElementById("mainBtn").innerText = "下一步驟";
+            document.getElementById("answerArea").style.visibility = "visible"; 
+            document.getElementById("mainBtn").innerText = "下一步驟";
         } else {
-            state.stepIdx++; if (state.stepIdx >= steps.length) generateNewTask(); 
+            state.stepIdx++; 
+            if (state.stepIdx >= steps.length) generateNewTask(); 
             else { if (document.getElementById("stepRandom").checked) state.notes.sort(() => Math.random() - 0.5); renderStep(); playNotes(state.notes); }
         }
     }
@@ -355,15 +382,18 @@
         state.stepIdx = 0; state.questionCounter++; state.isAnsMode = false;
         const n = parseInt(document.getElementById("sprintN").value);
         state.isCurrentSprint = (Math.random() < (1 / n));
-        const count = parseInt(document.getElementById("noteCount").value) || 4; state.notes = []; let pool = [0,1,2,3,4,5,6];
+        const count = parseInt(document.getElementById("noteCount").value) || 4; 
+        state.notes = []; let pool = [0,1,2,3,4,5,6];
         for(let i=0; i<count; i++) { if (pool.length === 0) pool = [0,1,2,3,4,5,6]; state.notes.push(pool.splice(Math.floor(Math.random()*pool.length), 1)[0]); }
         renderStep(); playNotes(state.notes);
     }
 
     function renderStep() {
         const mode = document.getElementById("trainMode").value, sid = MODE_STEPS[mode][state.stepIdx];
-        state.isAnsMode = false; state.userInputs = []; const sCont = document.getElementById("slotContainer"), qArea = document.getElementById("questionArea");
+        state.isAnsMode = false; state.userInputs = []; 
+        const sCont = document.getElementById("slotContainer"), qArea = document.getElementById("questionArea");
         document.getElementById("answerArea").style.visibility = "hidden"; sCont.innerHTML = ""; qArea.innerHTML = "";
+        
         state.notes.forEach((nIdx, i) => {
             const q = document.createElement("div"); q.className = "note-q-item"; q.onclick = () => playSingle(nIdx);
             let qText = "";
@@ -375,6 +405,7 @@
             q.innerText = qText; qArea.appendChild(q);
             const s = document.createElement("div"); s.className = "input-slot"; s.id = "slot" + i; sCont.appendChild(s);
         });
+        
         const inst = document.getElementById("instruction");
         let instText = "";
         switch(sid) {
@@ -394,13 +425,21 @@
     }
 
     function startTimer() {
-        clearInterval(state.timerInt); const mode = document.getElementById("timerMode").value, bar = document.getElementById("timerBar"), cont = document.getElementById("timerBarCont");
+        clearInterval(state.timerInt); 
+        const mode = document.getElementById("timerMode").value, bar = document.getElementById("timerBar"), cont = document.getElementById("timerBarCont");
         if (mode === 'off') { cont.style.display = "none"; return; }
+        
         let isTimed = (mode === 'always') || (mode === 'sprint' && state.isCurrentSprint);
         if (!isTimed) { cont.style.display = "none"; return; }
+        
         bar.style.transition = "none"; bar.style.width = "100%"; cont.style.display = "block";
         const sec = parseInt(document.getElementById("timerSec").value);
-        setTimeout(() => { bar.style.transition = `width ${sec}s linear`; bar.style.width = "0%"; }, 50);
+        
+        setTimeout(() => { 
+            bar.style.transition = `width ${sec}s linear`; 
+            bar.style.width = "0%"; 
+        }, 50);
+        
         state.timerInt = setInterval(() => { if (!state.isAnsMode) handleClick(); }, sec * 1000);
     }
 
@@ -414,7 +453,10 @@
             k.onclick = () => { 
                 if (!state.isAnsMode && state.userInputs.length < state.notes.length) { 
                     state.userInputs.push(kText); updateSlots();
-                    if (document.getElementById("playAnsSound").checked) { let idx = isSol ? solArr.indexOf(kText) : (isNum ? numArr.indexOf(kText) : namArr.indexOf(kText)); playSingle(idx); }
+                    if (document.getElementById("playAnsSound").checked) { 
+                        let idx = isSol ? solArr.indexOf(kText) : (isNum ? numArr.indexOf(kText) : namArr.indexOf(kText)); 
+                        playSingle(idx); 
+                    }
                 }
             }; kb.appendChild(k); 
         });
