@@ -5,67 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>橙色的樂理強化 v4.3.6</title>
     <style>
-        :root { --primary: #3498db; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; }
-        body { font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: var(--bg); margin: 0; min-height: 100vh; overflow-x: hidden; }
-        
-        .soul-note { position: fixed; pointer-events: none; font-weight: 900; color: var(--primary); opacity: 0; font-size: 1.5rem; z-index: 100; user-select: none; animation: soulFloatAnim 2s ease-out forwards; }
-        @keyframes soulFloatAnim { 0% { transform: translateY(0) scale(1); opacity: 0.3; } 100% { transform: translateY(-120px) scale(1.5); opacity: 0; } }
+        /* 🌿 護眼森林深色系變數 - 降低對比度，減少視覺疲勞 */
+        :root { 
+            --primary: #81ecec;     /* 柔和粉藍 */
+            --primary-dark: #2d3436; 
+            --success: #55efc4;     /* 薄荷綠 */
+            --error: #fab1a0;       /* 珊瑚橙 */
+            --bg: #1e272e;          /* 深海黑藍背景 */
+            --card-bg: #2f3640;     /* 深灰色卡片 */
+            --text-main: #dfe6e9;   /* 奶油白文字 */
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
 
-        .card { background: white; padding: 25px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; max-width: 500px; width: 100%; position: relative; z-index: 10; }
+        body { 
+            font-family: var(--font-main); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
+            background: var(--bg); 
+            color: var(--text-main);
+            margin: 0; 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+        }
+        
+        .soul-note { position: fixed; pointer-events: none; font-weight: 900; color: var(--primary); opacity: 0; font-size: 1.5rem; z-index: 100; user-select: none; animation: soulFloatAnim 2s ease-out forwards; text-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        @keyframes soulFloatAnim { 0% { transform: translateY(0) scale(1); opacity: 0.6; } 100% { transform: translateY(-120px) scale(1.5); opacity: 0; } }
+
+        .card { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-radius: 28px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4); 
+            text-align: center; 
+            max-width: 500px; 
+            width: 100%; 
+            position: relative; 
+            z-index: 10; 
+            border: 1px solid #3d444d;
+        }
+
         .top-nav { position: absolute; top: 15px; width: calc(100% - 40px); display: flex; justify-content: space-between; padding: 0 5px; z-index: 10; }
         .nav-group { display: flex; gap: 12px; align-items: center; }
-        .nav-item { cursor: pointer; font-size: 1.3em; filter: grayscale(0.3); transition: 0.2s; text-decoration: none; color: #333; }
+        .nav-item { cursor: pointer; font-size: 1.3em; transition: 0.2s; filter: grayscale(0.5); }
+        .nav-item:hover { filter: grayscale(0); transform: scale(1.1); }
+        
         .app-title { color: var(--primary); margin: 0; font-size: 1.4em; font-weight: 900; }
         
         .timer-group { margin-bottom: 12px; }
-        .session-timer { background: #eef2f7; color: #34495e; padding: 6px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; font-family: 'Courier New', monospace; display: inline-block; border: 1px solid #dcdde1; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+        .session-timer { background: #3d444d; color: var(--success); padding: 6px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; font-family: 'Courier New', monospace; border: 1px solid #485460; display: inline-block; }
         .base-status { font-size: 0.75em; color: #e67e22; font-weight: bold; margin-top: 5px; height: 1.2em; letter-spacing: 1px; }
 
-        .info-panel { background: #f8f9fa; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; display: none; font-size: 0.85em; border: 1px solid #ddd; max-height: 70vh; overflow-y: auto; }
-        .setting-group { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .info-panel { background: #353b48; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; display: none; font-size: 0.85em; border: 1px solid #485460; max-height: 70vh; overflow-y: auto; }
+        .setting-group { margin-bottom: 12px; border-bottom: 1px solid #485460; padding-bottom: 8px; }
         .group-title { font-weight: 800; color: var(--primary); display: block; margin-bottom: 8px; font-size: 1.1em; }
         .setting-item { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; }
         
-        .preset-item { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
-        .preset-info { display: flex; justify-content: space-between; align-items: flex-start; }
-        .preset-name { font-weight: 900; color: var(--primary); font-size: 1.1em; line-height: 1.2; max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .preset-date { font-size: 0.75em; color: #bdc3c7; }
-        .preset-details { font-size: 0.85em; color: #7f8c8d; border-bottom: 1px solid #f9f9f9; padding-bottom: 4px; }
-        .preset-actions { display: flex; gap: 5px; margin-top: 4px; }
-        .preset-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9em; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px; }
-        .btn-load { background: var(--primary); color: white; }
-        .btn-save { background: var(--success); color: white; }
-        .btn-del { background: #ecf0f1; color: #95a5a6; flex: 0 0 40px; }
+        /* 護眼版選單元件 */
+        select, input[type="number"] { background: #1e272e; color: white; border: 1px solid #485460; border-radius: 4px; padding: 2px 4px; }
+
+        .preset-item { background: #2f3640; border: 1px solid #485460; border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+        .preset-name { font-weight: 900; color: var(--primary); font-size: 1.1em; }
+        .preset-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9em; transition: 0.2s; color: #1e272e; }
+        .btn-load { background: var(--primary); }
+        .btn-save { background: var(--success); }
+        .btn-del { background: #718093; color: white; flex: 0 0 40px; }
 
         .degree-picker { display: flex; justify-content: space-between; gap: 4px; margin-top: 5px; width: 100%; flex-wrap: wrap; }
-        .deg-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; color: #95a5a6; transition: 0.2s; font-size: 0.85em; background: #fff; }
-        .deg-btn.active { border-color: var(--success); color: #fff; background: var(--success); box-shadow: 0 2px 5px rgba(46, 204, 113, 0.3); }
+        .deg-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #485460; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; color: #718093; background: #2f3640; transition: 0.2s; font-size: 0.85em; }
+        .deg-btn.active { border-color: var(--success); color: #1e272e; background: var(--success); }
 
         #refList { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; gap: 4px; overflow-x: auto; margin-bottom: 10px; }
-        .ref-item { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 42px; background: #fff; padding: 8px 2px; border-radius: 10px; border: 1px solid #eee; cursor: pointer; }
+        .ref-item { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 42px; background: #353b48; padding: 8px 2px; border-radius: 10px; border: 1px solid #485460; cursor: pointer; }
         .ref-note-name { font-weight: bold; color: var(--primary); font-size: 1.1em; }
-        .ref-sol-name { font-weight: 800; color: #2c3e50; font-size: 0.95em; }
+        .ref-sol-name { font-weight: 800; color: #dfe6e9; font-size: 0.95em; }
         .ref-num-name { font-weight: bold; color: #e67e22; font-size: 0.9em; }
 
-        .harmonica-ref-grid { display: grid; grid-template-columns: 40px repeat(4, 1fr); gap: 5px; background: #eee; padding: 8px; border-radius: 12px; margin-top: 5px; }
+        .harmonica-ref-grid { display: grid; grid-template-columns: 40px repeat(4, 1fr); gap: 5px; background: #232a31; padding: 8px; border-radius: 12px; margin-top: 5px; }
         .harm-ref-label { display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8em; border-radius: 6px; }
-        .label-blow { background: #d6eaff; color: #2980b9; }
-        .label-draw { background: #ffeaa7; color: #d35400; }
-        .harm-ref-cell { background: white; border-radius: 8px; padding: 5px 2px; text-align: center; border: 1px solid #ddd; cursor: pointer; }
+        .label-blow { background: #34495e; color: #81ecec; }
+        .label-draw { background: #57606f; color: #fab1a0; }
+        .harm-ref-cell { background: #2f3640; border-radius: 8px; padding: 5px 2px; text-align: center; border: 1px solid #485460; cursor: pointer; }
 
-        .concept-card { background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--primary); font-size: 0.95em; line-height: 1.4; }
-        .timer-bar-container { width: 100%; height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-bottom: 10px; display: none; }
+        .concept-card { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--primary); font-size: 0.95em; line-height: 1.4; }
+        .timer-bar-container { width: 100%; height: 6px; background: #3d444d; border-radius: 3px; overflow: hidden; margin-bottom: 10px; display: none; }
         #timerBar { height: 100%; background: var(--error); width: 100%; transition: width linear; }
         
-        .quiz-container { background: #f9f9f9; border-radius: 20px; padding: 20px; margin: 10px 0; border: 2px solid #eee; min-height: 150px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .instruction { font-size: 1.4em; font-weight: 900; color: #34495e; margin-bottom: 10px; line-height: 1.6; letter-spacing: 1px; }
-        .mode-hint { font-size: 0.95em; color: var(--primary); font-weight: bold; margin-top: 10px; display: inline-block; background: #eef7ff; padding: 5px 15px; border-radius: 12px; border: 1px solid #d6eaff; }
+        .quiz-container { background: #232a31; border-radius: 20px; padding: 20px; margin: 10px 0; border: 2px solid #3d444d; min-height: 150px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .instruction { font-size: 1.4em; font-weight: 900; color: var(--text-main); margin-bottom: 10px; line-height: 1.6; letter-spacing: 1px; }
+        .mode-hint { font-size: 0.85em; color: var(--primary); font-weight: bold; margin-top: 10px; display: inline-block; background: rgba(129, 236, 236, 0.1); padding: 5px 15px; border-radius: 12px; border: 1px solid var(--primary); }
         .sprint-text { color: var(--error); animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         .notes-display, .input-container { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; width: 100%; }
-        .note-q-item { width: 55px; font-size: 1.6em; font-weight: bold; color: #2c3e50; text-align: center; cursor: pointer; }
-        .input-slot { width: 55px; height: 45px; border-bottom: 3px solid #bdc3c7; font-size: 1.1em; font-weight: bold; display: flex; align-items: center; justify-content: center; position: relative; }
+        .note-q-item { width: 55px; font-size: 1.6em; font-weight: bold; color: var(--primary); text-align: center; cursor: pointer; }
+        .input-slot { width: 55px; height: 45px; border-bottom: 3px solid #485460; font-size: 1.1em; font-weight: bold; display: flex; align-items: center; justify-content: center; position: relative; }
         
         .slot-correct { color: var(--success) !important; border-bottom-color: var(--success) !important; }
         .slot-wrong { color: var(--error) !important; border-bottom-color: var(--error) !important; }
@@ -74,16 +109,18 @@
         .kb-standard { grid-template-columns: repeat(7, 1fr); }
         .kb-harmonica { grid-template-columns: repeat(4, 1fr); }
         
-        .key { padding: 15px 0; background: #fff; border-radius: 12px; font-weight: bold; cursor: pointer; border: 1px solid #dcdde1; box-shadow: 0 4px 0 #eee; font-size: 0.85em; -webkit-tap-highlight-color: transparent; }
-        .key.hint-correct { background: var(--success) !important; color: white !important; }
-        .key.control { background: #95a5a6; color: white; grid-column: 1 / -1; margin-top: 4px; padding: 10px 0; font-size: 1.2em; }
+        .key { padding: 15px 0; background: #353b48; border-radius: 12px; font-weight: bold; cursor: pointer; border: 1px solid #485460; box-shadow: 0 4px 0 #232a31; font-size: 0.85em; -webkit-tap-highlight-color: transparent; text-align: center; color: var(--text-main); }
+        .key:active { transform: translateY(2px); box-shadow: 0 2px 0 #232a31; }
+        .key.hint-correct { background: var(--success) !important; color: #1e272e !important; }
+        .key.control { background: #718093; color: white; grid-column: 1 / -1; margin-top: 4px; padding: 10px 0; font-size: 1.2em; }
         
-        #mainBtn { padding: 16px; font-size: 1.2em; cursor: pointer; border: none; border-radius: 14px; font-weight: bold; width: 100%; color: white; background: var(--success); margin-top: 15px; box-shadow: 0 4px 0 #27ae60; outline: none; }
-        .ans-text { margin-top: 8px; font-weight: bold; color: #7f8c8d; height: 1.2em; visibility: hidden; cursor: pointer; transition: color 0.2s; }
+        #mainBtn { padding: 16px; font-size: 1.2em; cursor: pointer; border: none; border-radius: 14px; font-weight: bold; width: 100%; color: #1e272e; background: var(--success); margin-top: 15px; box-shadow: 0 4px 0 #26ae60; outline: none; }
+        #mainBtn:active { transform: translateY(2px); box-shadow: 0 2px 0 #26ae60; }
+        .ans-text { margin-top: 8px; font-weight: bold; color: #718093; height: 1.2em; visibility: hidden; cursor: pointer; transition: color 0.2s; }
         
-        .footer { margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px; color: #95a5a6; font-size: 0.8em; text-align: center; }
-        .changelog { margin-top: 10px; text-align: left; background: #f9f9f9; padding: 12px; border-radius: 10px; font-size: 0.85em; border: 1px solid #eee; }
-        .changelog summary { cursor: pointer; color: #7f8c8d; font-weight: bold; margin-bottom: 5px; outline: none; }
+        .footer { margin-top: 30px; border-top: 1px solid #3d444d; padding-top: 15px; color: #718093; font-size: 0.8em; text-align: center; }
+        .changelog { margin-top: 10px; text-align: left; background: #2f3640; padding: 12px; border-radius: 10px; font-size: 0.85em; border: 1px solid #485460; }
+        .changelog summary { cursor: pointer; color: var(--primary); font-weight: bold; margin-bottom: 5px; outline: none; }
     </style>
 </head>
 <body>
@@ -102,7 +139,7 @@
         </div>
 
         <h1 class="app-title">橙色的樂理強化</h1>
-        <div class="version-tag" style="color:#95a5a6; font-size:0.7em; font-family:monospace; margin-bottom:5px;">Version 4.3.6</div>
+        <div class="version-tag" style="color:#718093; font-size:0.7em; font-family:monospace; margin-bottom:5px;">Version 4.3.6</div>
         
         <div class="timer-group">
             <div id="sessionTimer" class="session-timer">Practice Time: 00:00</div>
@@ -110,7 +147,7 @@
         </div>
 
         <div id="presetPanel" class="info-panel">
-            <span class="group-title">📑 存檔管理 (可自定義命名)</span>
+            <span class="group-title">📑 存檔管理</span>
             <div id="presetContainer">
                 <div class="preset-item" id="slot-1"></div>
                 <div class="preset-item" id="slot-2"></div>
@@ -122,15 +159,15 @@
             <span class="group-title">📚 樂理核心定義</span>
             <div class="concept-card"><b>1. 唱名系統</b>：
                 <br>• <b>首調 (Movable)</b>：Do 永遠是調性的第 1 級。
-                <br>• <b>固定調 (Fixed)</b>：Do 永遠等於 C。升降調會顯示升降符號。</div>
+                <br>• <b>固定調 (Fixed)</b>：Do 永遠等於 C。</div>
             <div class="concept-card" style="border-left-color: var(--success);"><b>2. 固定唱名</b>：C=Do, D=Re, E=Mi, F=Fa, G=Sol, A=La, B=Si。</div>
-            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 三向循環</b>：音名 ➔ 簡譜 ➔ 唱名 ➔ 音名。這是一個完整的閉環反應練習。</div>
+            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 三向循環</b>：音名 ➔ 簡譜 ➔ 唱名 ➔ 音名。</div>
         </div>
 
         <div id="pianoPanel" class="info-panel">
-            <span class="group-title">🎹 當前調性對照表 (點擊發聲)</span>
+            <span class="group-title">🎹 當前調性對照表(點擊發聲)</span>
             <div id="refList"></div>
-            <span class="group-title">🌬️ 半音階口琴對照</span>
+            <span class="group-title">🌬️ 半音階口琴對照(點擊發聲)</span>
             <div class="harmonica-ref-grid" id="harmonicaRefGrid"></div>
         </div>
 
@@ -156,8 +193,8 @@
                 <div class="setting-item">
                     <label>鍵盤排列模式</label>
                     <select id="layoutMode" onchange="renderKeyboard()">
-                        <option value="standard" selected>鋼琴標準 (1x7)</option>
-                        <option value="harmonica">口琴實體 (4x2)</option>
+                        <option value="standard" selected>鋼琴(1x7)</option>
+                        <option value="harmonica">口琴(4x2)</option>
                     </select>
                 </div>
                 <div class="setting-item" style="flex-direction: column; align-items: flex-start;">
@@ -170,7 +207,7 @@
                         <div class="deg-btn active" id="deg4" onclick="this.classList.toggle('active')">5</div>
                         <div class="deg-btn active" id="deg5" onclick="this.classList.toggle('active')">6</div>
                         <div class="deg-btn active" id="deg6" onclick="this.classList.toggle('active')">7</div>
-                        <div class="deg-btn" id="deg7" onclick="this.classList.toggle('active')">1(高)</div>
+                        <div class="deg-btn" id="deg7" onclick="this.classList.toggle('active')">1'</div>
                     </div>
                 </div>
                 <div class="setting-item"><label>基準根音</label>
@@ -200,8 +237,8 @@
                 <div id="sprintNGroup" class="setting-item" style="display:none;"><label>衝刺頻率 (1/N)</label><input type="number" id="sprintN" value="3" min="1" style="width:45px"></div>
                 <div class="setting-item"><label>倒數秒數</label><input type="number" id="timerSec" value="10" min="3" style="width:45px"></div>
                 
-                <div class="setting-item"><label>自動進入下一步驟</label><input type="checkbox" id="autoNext" onchange="applySettings()"></div>
-                <div class="setting-item"><label>下一步延遲(秒)</label><input type="number" id="autoNextSec" value="2" min="1" style="width:45px"></div>
+                <div class="setting-item"><label>自動進入下一步</label><input type="checkbox" id="autoNext" onchange="applySettings()"></div>
+                <div class="setting-item"><label>延遲(秒)</label><input type="number" id="autoNextSec" value="2" min="1" style="width:45px"></div>
 
                 <div class="setting-item"><label>鍵盤亂序</label><input type="checkbox" id="kbRandom" onchange="renderKeyboard()"></div>
                 <div class="setting-item"><label>題目播放聲音</label><input type="checkbox" id="playQuestSound"></div>
@@ -214,7 +251,7 @@
                     </div>
                 </div>
             </div>
-            <button onclick="applySettings()" style="width:100%; padding:12px; background:var(--success); color:white; border:none; border-radius:10px; font-weight:bold;">完成設定</button>
+            <button onclick="applySettings()" style="width:100%; padding:12px; background:var(--success); color:#1e272e; border:none; border-radius:10px; font-weight:bold;">完成設定</button>
         </div>
 
         <div class="timer-bar-container" id="timerBarCont"><div id="timerBar"></div></div>
@@ -230,12 +267,13 @@
         <button id="mainBtn" onclick="handleClick()">開始練習</button>
 
         <footer class="footer">
-            <p>Made with ❤️ by <strong>EtOH58daidai</strong> & <strong>Gemini</strong></p>
+            <p>Made with 🌿 for EtOH58daidai</p>
             <details class="changelog">
                 <summary>📜 更新日誌 v4.3.6</summary>
-                <ul>
+                <ul style="padding-left: 20px; text-align: left;">
                     <li><strong>v4.3.6</strong>: 新增自動進入下一步驟開關與延遲時間設定。</li>
                     <li><strong>v4.3.5</strong>: 支援存檔自定義命名功能。</li>
+                    <li><strong>Eye-Care</strong>: 套用護眼森林系配色並確保邏輯 100% 歸位。</li>
                 </ul>
             </details>
         </footer>
@@ -340,27 +378,23 @@
             
             if (raw) {
                 const config = JSON.parse(raw);
-                const rootText = document.querySelector(`#baseRoot option[value="${config.baseRoot}"]`).text;
-                const modeText = config.baseMode === 'major' ? '大調' : '小調';
-                const sysText = config.namingSystem === 'movable' ? '首調' : '固定';
-                
                 slot.innerHTML = `
                     <div class="preset-info">
                         <span class="preset-name">${config.presetName}</span>
-                        <span class="preset-date">${config.saveDate}</span>
+                        <span style="font-size:0.75em; color:#718093;">${config.saveDate}</span>
                     </div>
-                    <div class="preset-details">${rootText}${modeText} · ${sysText} · ${config.activeDegrees.length}音</div>
-                    <div class="preset-actions">
-                        <button class="preset-btn btn-load" onclick="loadPreset(${i})">讀取 📂</button>
-                        <button class="preset-btn btn-save" onclick="savePreset(${i})">覆蓋 💾</button>
+                    <div style="font-size:0.8em; color:#bdc3c7; margin-top:4px;">${config.activeDegrees.length}音練習中...</div>
+                    <div class="preset-actions" style="display:flex; gap:5px; margin-top:5px;">
+                        <button class="preset-btn btn-load" onclick="loadPreset(${i})" style="flex:1;">讀取 📂</button>
+                        <button class="preset-btn btn-save" onclick="savePreset(${i})" style="flex:1;">覆蓋 💾</button>
                         <button class="preset-btn btn-del" onclick="deletePreset(${i})">🗑️</button>
                     </div>
                 `;
             } else {
                 slot.innerHTML = `
-                    <div class="preset-info"><span class="preset-name" style="color:#bdc3c7">空存檔位 ${i}</span></div>
-                    <div class="preset-actions">
-                        <button class="preset-btn btn-save" onclick="savePreset(${i})" style="flex: 1;">建立存檔 💾</button>
+                    <div class="preset-info"><span style="color:#bdc3c7">空存檔位 ${i}</span></div>
+                    <div class="preset-actions" style="margin-top:4px;">
+                        <button class="preset-btn btn-save" onclick="savePreset(${i})" style="width:100%">建立存檔 💾</button>
                     </div>
                 `;
             }
@@ -500,9 +534,7 @@
     }
 
     function handleClick() {
-        // 點擊按鈕時先清除任何排程中的自動跳轉
         clearTimeout(state.autoNextTimer);
-
         ensureSessionTimer(); const mode = document.getElementById("trainMode").value, steps = MODE_STEPS[mode];
         if (state.notes.length === 0) { generateNewTask(); return; }
         const sid = steps[state.stepIdx];
@@ -526,11 +558,10 @@
             document.getElementById("answerArea").innerText = "正解：" + correct.join(" "); 
             document.getElementById("answerArea").style.visibility = "visible"; document.getElementById("mainBtn").innerText = "下一步驟";
 
-            // 如果開啟了自動下一步功能
             if (document.getElementById("autoNext").checked) {
                 const delay = parseInt(document.getElementById("autoNextSec").value) || 2;
                 state.autoNextTimer = setTimeout(() => {
-                    if (state.isAnsMode) handleClick(); // 確保還在答案模式才跳轉
+                    if (state.isAnsMode) handleClick(); 
                 }, delay * 1000);
             }
 
@@ -568,7 +599,7 @@
             sCont.innerHTML += `<div class="input-slot" id="slot${i}"></div>`;
         });
         const isSprintActive = (document.getElementById("timerMode").value === 'sprint' && state.isCurrentSprint);
-        inst.innerHTML = instText + (isSprintActive ? ' <br><span class="sprint-text">🔥 隨機衝刺！</span>' : '');
+        inst.innerHTML = instText + (isSprintActive ? ' <br><span class="sprint-text">🐾 快速奔跑！</span>' : '');
         renderKeyboard(); startTimer(); document.getElementById("mainBtn").innerText = "檢查答案";
         playNotes(state.notes, 'quest');
     }
@@ -598,10 +629,10 @@
         }
         keys.forEach(kObj => { 
             const k = document.createElement("div"); k.className = "key"; k.innerText = kObj.text; if (kObj.idx === -1) k.style.visibility = "hidden";
-            k.onclick = () => { if (!state.isAnsMode && kObj.idx !== -1 && state.userInputs.length < state.notes.length) { state.userInputs.push(kObj.text); state.notes.forEach((_, i) => document.getElementById("slot" + i).innerText = state.userInputs[i] || ""); playNotes([kObj.idx], 'ans'); }};
+            k.onclick = () => { if (!state.isAnsMode && kObj.idx !== -1 && state.userInputs.length < state.notes.length) { state.userInputs.push(kObj.text); Array.from(document.querySelectorAll('.input-slot'))[state.userInputs.length-1].innerText = kObj.text; playNotes([kObj.idx], 'ans'); }};
             kb.appendChild(k); 
         });
-        const del = document.createElement("div"); del.className = "key control"; del.innerText = "⌫"; del.onclick = () => { if(!state.isAnsMode) { state.userInputs.pop(); state.notes.forEach((_, i) => document.getElementById("slot" + i).innerText = state.userInputs[i] || ""); }}; kb.appendChild(del);
+        const del = document.createElement("div"); del.className = "key control"; del.innerText = "⌫"; del.onclick = () => { if(!state.isAnsMode) { state.userInputs.pop(); Array.from(document.querySelectorAll('.input-slot')).forEach((s, i) => s.innerText = state.userInputs[i] || ""); }}; kb.appendChild(del);
     }
     function handleReplay() { playNotes(state.notes, 'correct'); }
 </script>
