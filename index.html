@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>橙色的樂理強化 v4.3.3</title>
+    <title>橙色的樂理強化 v4.3.5</title>
     <style>
         :root { --primary: #3498db; --success: #2ecc71; --error: #e74c3c; --bg: #f0f4f8; }
         body { font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: var(--bg); margin: 0; min-height: 100vh; overflow-x: hidden; }
@@ -26,6 +26,17 @@
         .group-title { font-weight: 800; color: var(--primary); display: block; margin-bottom: 8px; font-size: 1.1em; }
         .setting-item { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; }
         
+        .preset-item { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
+        .preset-info { display: flex; justify-content: space-between; align-items: flex-start; }
+        .preset-name { font-weight: 900; color: var(--primary); font-size: 1.1em; line-height: 1.2; max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .preset-date { font-size: 0.75em; color: #bdc3c7; }
+        .preset-details { font-size: 0.85em; color: #7f8c8d; border-bottom: 1px solid #f9f9f9; padding-bottom: 4px; }
+        .preset-actions { display: flex; gap: 5px; margin-top: 4px; }
+        .preset-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9em; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        .btn-load { background: var(--primary); color: white; }
+        .btn-save { background: var(--success); color: white; }
+        .btn-del { background: #ecf0f1; color: #95a5a6; flex: 0 0 40px; }
+
         .degree-picker { display: flex; justify-content: space-between; gap: 4px; margin-top: 5px; width: 100%; flex-wrap: wrap; }
         .deg-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; color: #95a5a6; transition: 0.2s; font-size: 0.85em; background: #fff; }
         .deg-btn.active { border-color: var(--success); color: #fff; background: var(--success); box-shadow: 0 2px 5px rgba(46, 204, 113, 0.3); }
@@ -82,6 +93,7 @@
             <div class="nav-group">
                 <div class="nav-item" onclick="togglePanel('pianoPanel')">🎹</div>
                 <div class="nav-item" onclick="togglePanel('theoryPanel')">📚</div>
+                <div class="nav-item" onclick="togglePanel('presetPanel')">📑</div>
             </div>
             <div class="nav-group">
                 <div class="nav-item" onclick="fullReset()">🏠</div>
@@ -90,11 +102,20 @@
         </div>
 
         <h1 class="app-title">橙色的樂理強化</h1>
-        <div class="version-tag" style="color:#95a5a6; font-size:0.7em; font-family:monospace; margin-bottom:5px;">Version 4.3.3</div>
+        <div class="version-tag" style="color:#95a5a6; font-size:0.7em; font-family:monospace; margin-bottom:5px;">Version 4.3.5</div>
         
         <div class="timer-group">
             <div id="sessionTimer" class="session-timer">Practice Time: 00:00</div>
             <div id="baseStatus" class="base-status"></div>
+        </div>
+
+        <div id="presetPanel" class="info-panel">
+            <span class="group-title">📑 存檔管理 (可自定義命名)</span>
+            <div id="presetContainer">
+                <div class="preset-item" id="slot-1"></div>
+                <div class="preset-item" id="slot-2"></div>
+                <div class="preset-item" id="slot-3"></div>
+            </div>
         </div>
 
         <div id="theoryPanel" class="info-panel">
@@ -207,11 +228,10 @@
         <footer class="footer">
             <p>Made with ❤️ by <strong>EtOH58daidai</strong> & <strong>Gemini</strong></p>
             <details class="changelog">
-                <summary>📜 更新日誌 v4.3.3</summary>
+                <summary>📜 更新日誌 v4.3.5</summary>
                 <ul>
-                    <li><strong>v4.3.3</strong>: 加入完全重設功能與 🏠 首頁圖示連動。</li>
-                    <li><strong>v4.3.2</strong>: 設定優化：根音移至調性上方。補回 Sol/So 切換。</li>
-                    <li><strong>v4.3.1</strong>: 補回大小調切換與自然小調音程。</li>
+                    <li><strong>v4.3.5</strong>: 支援存檔自定義命名功能。</li>
+                    <li><strong>v4.3.4</strong>: 新增獨立存檔管理面板 (📑)。</li>
                 </ul>
             </details>
         </footer>
@@ -228,8 +248,119 @@
     let state = { notes: [], userInputs: [], stepIdx: 0, isAnsMode: false, ctx: null, timerInt: null, sessionStartTime: null, sessionTimerInt: null, isCurrentSprint: false };
     const MODE_STEPS = { map_ns: [10, 11], map_nn: [30, 31], map_sn: [40, 41], cycle: [50, 51, 52] };
 
-    window.onload = () => { applySettings(); };
+    window.onload = () => { updatePresetUI(); applySettings(); };
 
+    // --- 存檔系統功能 (v4.3.5 加入命名) ---
+    function savePreset(slotIdx) {
+        // 先獲取舊名稱作為預設值
+        const oldRaw = localStorage.getItem(`theory_preset_${slotIdx}`);
+        let defaultName = "我的練習設定 " + slotIdx;
+        if (oldRaw) defaultName = JSON.parse(oldRaw).presetName;
+
+        const userInput = prompt("請輸入存檔名稱：", defaultName);
+        if (userInput === null) return; // 使用者按取消
+
+        const activeDegrees = [];
+        for (let i = 0; i < 8; i++) {
+            if (document.getElementById(`deg${i}`).classList.contains('active')) activeDegrees.push(i);
+        }
+
+        const config = {
+            presetName: userInput || "未命名存檔",
+            namingSystem: document.getElementById("namingSystem").value,
+            trainMode: document.getElementById("trainMode").value,
+            layoutMode: document.getElementById("layoutMode").value,
+            activeDegrees: activeDegrees,
+            baseRoot: document.getElementById("baseRoot").value,
+            baseMode: document.getElementById("baseMode").value,
+            noteCount: document.getElementById("noteCount").value,
+            timerMode: document.getElementById("timerMode").value,
+            sprintN: document.getElementById("sprintN").value,
+            timerSec: document.getElementById("timerSec").value,
+            kbRandom: document.getElementById("kbRandom").checked,
+            playQuestSound: document.getElementById("playQuestSound").checked,
+            playAnsSound: document.getElementById("playAnsSound").checked,
+            playCorrectSound: document.getElementById("playCorrectSound").checked,
+            solTypeSo: document.getElementById("solTypeSo").checked,
+            saveDate: new Date().toLocaleString()
+        };
+
+        localStorage.setItem(`theory_preset_${slotIdx}`, JSON.stringify(config));
+        updatePresetUI();
+    }
+
+    function loadPreset(slotIdx) {
+        const raw = localStorage.getItem(`theory_preset_${slotIdx}`);
+        if (!raw) return;
+        const config = JSON.parse(raw);
+
+        document.getElementById("namingSystem").value = config.namingSystem;
+        document.getElementById("trainMode").value = config.trainMode;
+        document.getElementById("layoutMode").value = config.layoutMode;
+        document.getElementById("baseRoot").value = config.baseRoot;
+        document.getElementById("baseMode").value = config.baseMode;
+        document.getElementById("noteCount").value = config.noteCount;
+        document.getElementById("timerMode").value = config.timerMode;
+        document.getElementById("sprintN").value = config.sprintN;
+        document.getElementById("timerSec").value = config.timerSec;
+        document.getElementById("kbRandom").checked = config.kbRandom;
+        document.getElementById("playQuestSound").checked = config.playQuestSound;
+        document.getElementById("playAnsSound").checked = config.playAnsSound;
+        document.getElementById("playCorrectSound").checked = config.playCorrectSound;
+        document.getElementById("solTypeSo").checked = config.solTypeSo;
+        document.getElementById("solTypeSol").checked = !config.solTypeSo;
+
+        for (let i = 0; i < 8; i++) {
+            const btn = document.getElementById(`deg${i}`);
+            if (config.activeDegrees.includes(i)) btn.classList.add('active');
+            else btn.classList.remove('active');
+        }
+
+        applySettings();
+    }
+
+    function deletePreset(slotIdx) {
+        if (confirm(`確定要刪除該存檔嗎？`)) {
+            localStorage.removeItem(`theory_preset_${slotIdx}`);
+            updatePresetUI();
+        }
+    }
+
+    function updatePresetUI() {
+        for (let i = 1; i <= 3; i++) {
+            const slot = document.getElementById(`slot-${i}`);
+            const raw = localStorage.getItem(`theory_preset_${i}`);
+            
+            if (raw) {
+                const config = JSON.parse(raw);
+                const rootText = document.querySelector(`#baseRoot option[value="${config.baseRoot}"]`).text;
+                const modeText = config.baseMode === 'major' ? '大調' : '小調';
+                const sysText = config.namingSystem === 'movable' ? '首調' : '固定';
+                
+                slot.innerHTML = `
+                    <div class="preset-info">
+                        <span class="preset-name">${config.presetName}</span>
+                        <span class="preset-date">${config.saveDate}</span>
+                    </div>
+                    <div class="preset-details">${rootText}${modeText} · ${sysText} · ${config.activeDegrees.length}音</div>
+                    <div class="preset-actions">
+                        <button class="preset-btn btn-load" onclick="loadPreset(${i})">讀取 📂</button>
+                        <button class="preset-btn btn-save" onclick="savePreset(${i})">覆蓋 💾</button>
+                        <button class="preset-btn btn-del" onclick="deletePreset(${i})">🗑️</button>
+                    </div>
+                `;
+            } else {
+                slot.innerHTML = `
+                    <div class="preset-info"><span class="preset-name" style="color:#bdc3c7">空存檔位 ${i}</span></div>
+                    <div class="preset-actions">
+                        <button class="preset-btn btn-save" onclick="savePreset(${i})" style="flex: 1;">建立存檔 💾</button>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    // --- 原有邏輯 ---
     function fullReset() {
         clearInterval(state.timerInt); clearInterval(state.sessionTimerInt);
         state.timerInt = state.sessionTimerInt = state.sessionStartTime = null;
@@ -301,7 +432,13 @@
         statusEl.innerText = `[ ${rootText} ${modeText} · ${naming} ]`;
     }
 
-    function togglePanel(id) { const p = document.getElementById(id); const isShow = (p.style.display === "block"); document.querySelectorAll('.info-panel').forEach(el => el.style.display = 'none'); p.style.display = isShow ? 'none' : 'block'; }
+    function togglePanel(id) { 
+        const p = document.getElementById(id); 
+        const isShow = (p.style.display === "block"); 
+        document.querySelectorAll('.info-panel').forEach(el => el.style.display = 'none'); 
+        p.style.display = isShow ? 'none' : 'block'; 
+        if (id === 'presetPanel') updatePresetUI();
+    }
     
     function updateModeUI() { 
         document.getElementById("sprintNGroup").style.display = (document.getElementById("timerMode").value === 'sprint') ? 'flex' : 'none';
@@ -320,6 +457,7 @@
         document.getElementById("timerBarCont").style.display = "none";
         document.getElementById("answerArea").style.visibility = "hidden";
         document.getElementById("settingsPanel").style.display = "none";
+        document.getElementById("presetPanel").style.display = "none";
         updateModeUI(); updateStatusDisplay(); renderRefList();
     }
 
