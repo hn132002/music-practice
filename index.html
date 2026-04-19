@@ -28,6 +28,9 @@
             margin: 0; 
             min-height: 100vh; 
             overflow-x: hidden; 
+            /* 全域防止文字選取，避免誤觸干擾 */
+            user-select: none;
+            -webkit-user-select: none;
         }
         
         .soul-note { position: fixed; pointer-events: none; font-weight: 900; color: var(--primary); opacity: 0; font-size: 1.5rem; z-index: 100; user-select: none; animation: soulFloatAnim 2s ease-out forwards; text-shadow: 0 0 5px rgba(0,0,0,0.5); }
@@ -48,7 +51,7 @@
 
         .top-nav { position: absolute; top: 15px; width: calc(100% - 40px); display: flex; justify-content: space-between; padding: 0 5px; z-index: 10; }
         .nav-group { display: flex; gap: 12px; align-items: center; }
-        .nav-item { cursor: pointer; font-size: 1.3em; transition: 0.2s; filter: grayscale(0.5); user-select: none; -webkit-user-select: none; }
+        .nav-item { cursor: pointer; font-size: 1.3em; transition: 0.2s; filter: grayscale(0.5); }
         .nav-item:hover { filter: grayscale(0); transform: scale(1.1); }
         
         .app-title { color: var(--primary); margin: 0; font-size: 1.4em; font-weight: 900; }
@@ -57,17 +60,24 @@
         .session-timer { background: #3d444d; color: var(--success); padding: 6px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold; font-family: 'Courier New', monospace; border: 1px solid #485460; display: inline-block; }
         .base-status { font-size: 0.75em; color: #e67e22; font-weight: bold; margin-top: 5px; height: 1.2em; letter-spacing: 1px; }
 
-        /* 修改後的 info-panel，取消捲軸限制 */
         .info-panel { background: #353b48; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; display: none; font-size: 0.85em; border: 1px solid #485460; max-height: none; overflow-y: visible; }
 
         .setting-group { margin-bottom: 12px; border-bottom: 1px solid #485460; padding-bottom: 8px; }
         .group-title { font-weight: 800; color: var(--primary); display: block; margin-bottom: 8px; font-size: 1.1em; }
         .setting-item { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; }
         
-        /* 護眼版選單元件 */
         select, input[type="number"] { background: #1e272e; color: white; border: 1px solid #485460; border-radius: 4px; padding: 2px 4px; }
 
-        .preset-item { background: #2f3640; border: 1px solid #485460; border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+        /* 存檔區例外：允許文字選取 */
+        .preset-item { 
+            background: #2f3640; 
+            border: 1px solid #485460; 
+            border-radius: 12px; 
+            padding: 12px; 
+            margin-bottom: 10px; 
+            user-select: text; 
+            -webkit-user-select: text;
+        }
         .preset-name { font-weight: 900; color: var(--primary); font-size: 1.1em; }
         .preset-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9em; transition: 0.2s; color: #1e272e; }
         .btn-load { background: var(--primary); }
@@ -79,7 +89,7 @@
         .deg-btn.active { border-color: var(--success); color: #1e272e; background: var(--success); }
 
         #refList { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; gap: 4px; overflow-x: auto; margin-bottom: 10px; }
-        .ref-item { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 42px; background: #353b48; padding: 8px 2px; border-radius: 10px; border: 1px solid #485460; cursor: pointer; user-select: none; -webkit-user-select: none; }
+        .ref-item { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 42px; background: #353b48; padding: 8px 2px; border-radius: 10px; border: 1px solid #485460; cursor: pointer; }
         .ref-note-name { font-weight: bold; color: var(--primary); font-size: 1.1em; }
         .ref-sol-name { font-weight: 800; color: #dfe6e9; font-size: 0.95em; }
         .ref-num-name { font-weight: bold; color: #e67e22; font-size: 0.9em; }
@@ -88,7 +98,7 @@
         .harm-ref-label { display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8em; border-radius: 6px; }
         .label-blow { background: #34495e; color: #81ecec; }
         .label-draw { background: #57606f; color: #fab1a0; }
-        .harm-ref-cell { background: #2f3640; border-radius: 8px; padding: 5px 2px; text-align: center; border: 1px solid #485460; cursor: pointer; user-select: none; -webkit-user-select: none; }
+        .harm-ref-cell { background: #2f3640; border-radius: 8px; padding: 5px 2px; text-align: center; border: 1px solid #485460; cursor: pointer; }
 
         .concept-card { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--primary); font-size: 0.95em; line-height: 1.4; }
         .timer-bar-container { width: 100%; height: 6px; background: #3d444d; border-radius: 3px; overflow: hidden; margin-bottom: 10px; display: none; }
@@ -111,12 +121,12 @@
         .kb-standard { grid-template-columns: repeat(7, 1fr); }
         .kb-harmonica { grid-template-columns: repeat(4, 1fr); }
         
-        .key { padding: 15px 0; background: #353b48; border-radius: 12px; font-weight: bold; cursor: pointer; border: 1px solid #485460; box-shadow: 0 4px 0 #232a31; font-size: 0.85em; -webkit-tap-highlight-color: transparent; text-align: center; color: var(--text-main); user-select: none; -webkit-user-select: none; }
+        .key { padding: 15px 0; background: #353b48; border-radius: 12px; font-weight: bold; cursor: pointer; border: 1px solid #485460; box-shadow: 0 4px 0 #232a31; font-size: 0.85em; -webkit-tap-highlight-color: transparent; text-align: center; color: var(--text-main); }
         .key:active { transform: translateY(2px); box-shadow: 0 2px 0 #232a31; }
         .key.hint-correct { background: var(--success) !important; color: #1e272e !important; }
         .key.control { background: #718093; color: white; grid-column: 1 / -1; margin-top: 4px; padding: 10px 0; font-size: 1.2em; }
         
-        #mainBtn { padding: 16px; font-size: 1.2em; cursor: pointer; border: none; border-radius: 14px; font-weight: bold; width: 100%; color: #1e272e; background: var(--success); margin-top: 15px; box-shadow: 0 4px 0 #26ae60; outline: none; user-select: none; -webkit-user-select: none; }
+        #mainBtn { padding: 16px; font-size: 1.2em; cursor: pointer; border: none; border-radius: 14px; font-weight: bold; width: 100%; color: #1e272e; background: var(--success); margin-top: 15px; box-shadow: 0 4px 0 #26ae60; outline: none; }
         #mainBtn:active { transform: translateY(2px); box-shadow: 0 2px 0 #26ae60; }
         .ans-text { margin-top: 8px; font-weight: bold; color: #718093; height: 1.2em; visibility: hidden; cursor: pointer; transition: color 0.2s; }
         
