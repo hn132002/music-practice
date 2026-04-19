@@ -531,7 +531,7 @@
             const osc = state.ctx.createOscillator(), gain = state.ctx.createGain();
             const freq = 261.63 * Math.pow(2, (rootOffset + intervals[idx]) / 12);
             osc.frequency.setValueAtTime(freq, now + i * 0.4); 
-            gain.gain.setValueAtTime(0, now + i * 0.4); gain.gain.linearRampToValueAtTime(0.1, now + i * 0.4 + 0.01); gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.4 + 0.5);
+            gain.gain.setValueAtTime(0, now + i * 0.4); gain.gain.linearRampToValueAtTime(0.6, now + i * 0.4 + 0.01); gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.4 + 0.5);
             osc.connect(gain); gain.connect(state.ctx.destination); osc.start(now + i * 0.4); osc.stop(now + i * 0.4 + 0.6);
         });
     }
