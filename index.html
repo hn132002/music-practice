@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>橙色的樂理強化 v4.3.8</title>
+    <title>橙色的樂理強化 v4.4.6</title>
     <style>
         /* 🌿 護眼森林深色系變數 - 降低對比度，減少視覺疲勞 */
         :root { 
@@ -108,9 +108,39 @@
         .sprint-text { color: var(--error); animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        .notes-display, .input-container { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; width: 100%; }
-        .note-q-item { width: 55px; font-size: 1.6em; font-weight: bold; color: var(--primary); text-align: center; cursor: pointer; }
-        .input-slot { width: 55px; height: 45px; border-bottom: 3px solid #485460; font-size: 1.1em; font-weight: bold; display: flex; align-items: center; justify-content: center; position: relative; }
+        /* 🛠️ 寬度微調核心：單行 8 音符橫向排版核心 CSS */
+        .notes-display, .input-container { 
+            display: flex; 
+            justify-content: center; 
+            gap: 5px;           /* 縮小間距 */
+            flex-wrap: wrap; 
+            margin-bottom: 15px; 
+            width: 100%; 
+        }
+        .note-q-item { 
+            width: 50px;        /* 縮減寬度以利 8 個併排 */
+            font-size: 1.6em; 
+            font-weight: bold; 
+            color: var(--primary); 
+            text-align: center; 
+            cursor: pointer; 
+            transition: 0.15s; 
+        }
+        
+        /* 節拍器亮起樣式 */
+        .note-q-item.active-note { color: var(--success); transform: scale(1.3); text-shadow: 0 0 15px var(--success); }
+
+        .input-slot { 
+            width: 50px;        /* 同步調整答題欄位寬度 */
+            height: 45px; 
+            border-bottom: 3px solid #485460; 
+            font-size: 1.1em; 
+            font-weight: bold; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            position: relative; 
+        }
         
         .slot-correct { color: var(--success) !important; border-bottom-color: var(--success) !important; }
         .slot-wrong { color: var(--error) !important; border-bottom-color: var(--error) !important; }
@@ -149,7 +179,7 @@
         </div>
 
         <h1 class="app-title">橙色的樂理強化</h1>
-        <div class="version-tag" style="color:#718093; font-size:0.7em; font-family:monospace; margin-bottom:5px;">Version 4.3.8</div>
+        <div class="version-tag" style="color:#718093; font-size:0.7em; font-family:monospace; margin-bottom:5px;">Version 4.4.6</div>
         
         <div class="timer-group">
             <div id="sessionTimer" class="session-timer">Practice Time: 00:00</div>
@@ -171,7 +201,7 @@
                 <br>• <b>首調 (Movable)</b>：Do 永遠是調性的第 1 級。
                 <br>• <b>固定調 (Fixed)</b>：Do 永遠等於 C。</div>
             <div class="concept-card" style="border-left-color: var(--success);"><b>2. 固定唱名</b>：C=Do, D=Re, E=Mi, F=Fa, G=Sol, A=La, B=Si。</div>
-            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 三向循環</b>：音名 ➔ 簡譜 ➔ 唱名 ➔ 音名。</div>
+            <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 節拍器系統</b>：開啟引導後題目隨拍亮起，結束後自動結算答案。</div>
         </div>
 
         <div id="pianoPanel" class="info-panel">
@@ -250,6 +280,9 @@
                 <div id="sprintNGroup" class="setting-item" style="display:none;"><label>衝刺頻率 (1/N)</label><input type="number" id="sprintN" value="3" min="1" style="width:45px"></div>
                 <div class="setting-item"><label>倒數秒數</label><input type="number" id="timerSec" value="10" min="3" style="width:45px"></div>
                 
+                <div class="setting-item"><label>節拍器引導</label><input type="checkbox" id="metroOn" onchange="applySettings()"></div>
+                <div class="setting-item"><label>BPM (速度)</label><input type="number" id="bpm" value="60" min="30" max="240" style="width:50px"></div>
+
                 <div class="setting-item"><label>自動進入下一題</label><input type="checkbox" id="autoNext" onchange="applySettings()"></div>
                 <div class="setting-item"><label>要延遲幾秒自動進入</label><input type="number" id="autoNextSec" value="2" min="1" style="width:45px"></div>
 
@@ -283,12 +316,10 @@
             <p>Made with ❤️ by <strong>EtOH58daidai</strong> & <strong>Gemini</strong></p>
             <p>有事情 TG: <a href="https://t.me/EtOH58daidai" target="_blank" style="color: #E67E22;">EtOH58daidai</a></p>
             <details class="changelog">
-                <summary>📜 更新日誌 v4.3.8</summary>
+                <summary>📜 更新日誌 v4.4.6</summary>
                 <ul style="padding-left: 20px; text-align: left;">
-                    <li><strong>v4.3.8</strong>: 修正純模式答題對應：音名➔唱名、簡譜➔音名、唱名➔音名。</li>
-                    <li><strong>v4.3.7</strong>: 新增純簡譜/音名/唱名辨識模式。</li>
-                    <li><strong>v4.3.6</strong>: 新增自動進入下一步驟開關與延遲時間設定。</li>
-                    <li><strong>Eye-Care</strong>: 套用護眼森林系配色。</li>
+                    <li><strong>v4.4.6</strong>: 優化顯示欄位寬度，確保 8 個音符可單行併排顯示。</li>
+                    <li><strong>v4.4.5</strong>: 整合節拍器 (BPM) 視覺引導與三種純模式 (音名/簡譜/唱名辨識)。</li>
                 </ul>
             </details>
         </footer>
@@ -298,11 +329,11 @@
     const PITCH_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
     const PITCH_SOLS_BASE = ["Do", "Do#", "Re", "Re#", "Mi", "Fa", "Fa#", "Sol", "Sol#", "La", "La#", "Si"];
     const SOL_NAMES_BASE = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si", "Do"];
-    const namArr = ["C", "D", "E", "F", "G", "A", "B", "C"], numArr = ["1", "2", "3", "4", "5", "6", "7", "1"];
+    const namArr = ["C", "D", "E", "F", "G", "A", "B", "C"], numArr = ["1", "2", "3", "4", "5", "6", "7", "1'"];
     const SCALE_INTERVALS = { major: [0, 2, 4, 5, 7, 9, 11, 12], minor: [0, 2, 3, 5, 7, 8, 10, 12] };
     const HARM_INDEX_MAP = [0, 2, 4, 7, 1, 3, 5, 6]; 
 
-    let state = { notes: [], userInputs: [], stepIdx: 0, isAnsMode: false, ctx: null, timerInt: null, autoNextTimer: null, sessionStartTime: null, sessionTimerInt: null, isCurrentSprint: false };
+    let state = { notes: [], userInputs: [], stepIdx: 0, isAnsMode: false, ctx: null, timerInt: null, metroTimer: null, autoNextTimer: null, sessionStartTime: null, sessionTimerInt: null, isCurrentSprint: false };
     const MODE_STEPS = { 
         map_ns: [10, 11], 
         map_nn: [30, 31], 
@@ -315,14 +346,20 @@
 
     window.onload = () => { updatePresetUI(); applySettings(); };
 
+    // --- 存檔系統功能 ---
     function savePreset(slotIdx) {
         const oldRaw = localStorage.getItem(`theory_preset_${slotIdx}`);
         let defaultName = "我的練習設定 " + slotIdx;
         if (oldRaw) defaultName = JSON.parse(oldRaw).presetName;
+
         const userInput = prompt("請輸入存檔名稱：", defaultName);
         if (userInput === null) return;
+
         const activeDegrees = [];
-        for (let i = 0; i < 8; i++) { if (document.getElementById(`deg${i}`).classList.contains('active')) activeDegrees.push(i); }
+        for (let i = 0; i < 8; i++) {
+            if (document.getElementById(`deg${i}`).classList.contains('active')) activeDegrees.push(i);
+        }
+
         const config = {
             presetName: userInput || "未命名存檔",
             namingSystem: document.getElementById("namingSystem").value,
@@ -335,6 +372,8 @@
             timerMode: document.getElementById("timerMode").value,
             sprintN: document.getElementById("sprintN").value,
             timerSec: document.getElementById("timerSec").value,
+            bpm: document.getElementById("bpm").value,
+            metroOn: document.getElementById("metroOn").checked,
             autoNext: document.getElementById("autoNext").checked,
             autoNextSec: document.getElementById("autoNextSec").value,
             kbRandom: document.getElementById("kbRandom").checked,
@@ -344,6 +383,7 @@
             solTypeSo: document.getElementById("solTypeSo").checked,
             saveDate: new Date().toLocaleString()
         };
+
         localStorage.setItem(`theory_preset_${slotIdx}`, JSON.stringify(config));
         updatePresetUI();
     }
@@ -352,6 +392,7 @@
         const raw = localStorage.getItem(`theory_preset_${slotIdx}`);
         if (!raw) return;
         const config = JSON.parse(raw);
+
         document.getElementById("namingSystem").value = config.namingSystem;
         document.getElementById("trainMode").value = config.trainMode;
         document.getElementById("layoutMode").value = config.layoutMode;
@@ -359,8 +400,10 @@
         document.getElementById("baseMode").value = config.baseMode;
         document.getElementById("noteCount").value = config.noteCount;
         document.getElementById("timerMode").value = config.timerMode;
-        document.getElementById("sprintN").value = config.sprintN;
+        document.getElementById("sprintN").value = config.sprintN || 3;
         document.getElementById("timerSec").value = config.timerSec;
+        document.getElementById("bpm").value = config.bpm || 60;
+        document.getElementById("metroOn").checked = config.metroOn || false;
         document.getElementById("autoNext").checked = config.autoNext || false;
         document.getElementById("autoNextSec").value = config.autoNextSec || 2;
         document.getElementById("kbRandom").checked = config.kbRandom;
@@ -369,11 +412,13 @@
         document.getElementById("playCorrectSound").checked = config.playCorrectSound;
         document.getElementById("solTypeSo").checked = config.solTypeSo;
         document.getElementById("solTypeSol").checked = !config.solTypeSo;
+
         for (let i = 0; i < 8; i++) {
             const btn = document.getElementById(`deg${i}`);
             if (config.activeDegrees.includes(i)) btn.classList.add('active');
             else btn.classList.remove('active');
         }
+
         applySettings();
     }
 
@@ -388,6 +433,7 @@
         for (let i = 1; i <= 3; i++) {
             const slot = document.getElementById(`slot-${i}`);
             const raw = localStorage.getItem(`theory_preset_${i}`);
+            
             if (raw) {
                 const config = JSON.parse(raw);
                 slot.innerHTML = `
@@ -397,23 +443,28 @@
                     </div>
                     <div style="font-size:0.8em; color:#bdc3c7; margin-top:4px;">${config.activeDegrees.length}音練習中...</div>
                     <div class="preset-actions" style="display:flex; gap:5px; margin-top:5px;">
-                        <button class="preset-btn btn-load" onclick="loadPreset(${i})">讀取 📂</button>
-                        <button class="preset-btn btn-save" onclick="savePreset(${i})">覆蓋 💾</button>
+                        <button class="preset-btn btn-load" onclick="loadPreset(${i})" style="flex:1;">讀取 📂</button>
+                        <button class="preset-btn btn-save" onclick="savePreset(${i})" style="flex:1;">覆蓋 💾</button>
                         <button class="preset-btn btn-del" onclick="deletePreset(${i})">🗑️</button>
-                    </div>`;
+                    </div>
+                `;
             } else {
                 slot.innerHTML = `
                     <div class="preset-info"><span style="color:#bdc3c7">空存檔位 ${i}</span></div>
                     <div class="preset-actions" style="margin-top:4px;">
                         <button class="preset-btn btn-save" onclick="savePreset(${i})" style="width:100%">建立存檔 💾</button>
-                    </div>`;
+                    </div>
+                `;
             }
         }
     }
 
+    // --- 核心邏輯 ---
     function fullReset() {
-        clearInterval(state.timerInt); clearInterval(state.sessionTimerInt); clearTimeout(state.autoNextTimer);
-        state.timerInt = state.sessionTimerInt = state.sessionStartTime = state.autoNextTimer = null;
+        clearInterval(state.timerInt); clearInterval(state.metroTimer);
+        clearInterval(state.sessionTimerInt);
+        clearTimeout(state.autoNextTimer);
+        state.timerInt = state.sessionTimerInt = state.sessionStartTime = state.autoNextTimer = state.metroTimer = null;
         state.notes = []; state.userInputs = []; state.stepIdx = 0; state.isAnsMode = false; state.isCurrentSprint = false;
         document.getElementById("sessionTimer").innerText = "Practice Time: 00:00";
         document.getElementById("timerBarCont").style.display = "none";
@@ -454,7 +505,8 @@
             const rect = slot.getBoundingClientRect();
             const soul = document.createElement("div"); soul.className = "soul-note"; soul.innerText = correctSymbols[i];
             soul.style.left = (rect.left + rect.width / 2 - 10) + "px"; soul.style.top = (rect.top - 10) + "px";
-            document.body.appendChild(soul); setTimeout(() => soul.remove(), 2000);
+            document.body.appendChild(soul);
+            setTimeout(() => soul.remove(), 2000);
         });
     }
 
@@ -482,9 +534,11 @@
     }
 
     function togglePanel(id) { 
-        const p = document.getElementById(id); const isShow = (p.style.display === "block"); 
+        const p = document.getElementById(id); 
+        const isShow = (p.style.display === "block"); 
         document.querySelectorAll('.info-panel').forEach(el => el.style.display = 'none'); 
-        p.style.display = isShow ? 'none' : 'block'; if (id === 'presetPanel') updatePresetUI();
+        p.style.display = isShow ? 'none' : 'block'; 
+        if (id === 'presetPanel') updatePresetUI();
     }
     
     function updateModeUI() { 
@@ -499,7 +553,8 @@
     }
 
     function applySettings() {
-        clearInterval(state.timerInt); clearTimeout(state.autoNextTimer);
+        clearInterval(state.timerInt); clearInterval(state.metroTimer);
+        clearTimeout(state.autoNextTimer);
         state.notes = []; state.stepIdx = 0; state.isAnsMode = false;
         document.getElementById("timerBarCont").style.display = "none";
         document.getElementById("answerArea").style.visibility = "hidden";
@@ -523,7 +578,8 @@
         if (forceType === 'quest' && !document.getElementById("playQuestSound").checked) return;
         if (forceType === 'ans' && !document.getElementById("playAnsSound").checked) return;
         if (forceType === 'correct' && !document.getElementById("playCorrectSound").checked) return;
-        if (!state.ctx) state.ctx = new AudioContext(); if (state.ctx.state === 'suspended') state.ctx.resume();
+        if (!state.ctx) state.ctx = new AudioContext();
+        if (state.ctx.state === 'suspended') state.ctx.resume();
         const now = state.ctx.currentTime, rootOffset = parseInt(document.getElementById("baseRoot").value);
         const intervals = getIntervals();
         targetIndices.forEach((idx, i) => {
@@ -536,18 +592,21 @@
     }
 
     function handleClick() {
-        clearTimeout(state.autoNextTimer); ensureSessionTimer(); 
-        const mode = document.getElementById("trainMode").value, steps = MODE_STEPS[mode];
+        clearInterval(state.metroTimer);
+        clearTimeout(state.autoNextTimer);
+        ensureSessionTimer(); const mode = document.getElementById("trainMode").value, steps = MODE_STEPS[mode];
         if (state.notes.length === 0) { generateNewTask(); return; }
         const sid = steps[state.stepIdx];
+
         if (!state.isAnsMode) {
             state.isAnsMode = true; clearInterval(state.timerInt);
             const bar = document.getElementById("timerBar"); if (bar) { bar.style.transition = 'none'; bar.style.width = window.getComputedStyle(bar).width; }
             
             let type = 'nam';
             if ([10, 40, 50, 60].includes(sid)) type = 'sol';
-            else if ([30, 41, 51].includes(sid)) type = 'num';
-            
+            else if ([30, 41, 51, 61, 62].includes(sid)) type = 'num';
+            if ([31, 52, 61, 62].includes(sid)) type = 'nam'; // 修正部分對應
+
             const correct = state.notes.map(n => getNoteLabel(n, type));
             triggerSoulFloat(correct);
             state.notes.forEach((_, i) => { 
@@ -561,10 +620,14 @@
             playNotes(state.notes, 'correct');
             document.getElementById("answerArea").innerText = "正解：" + correct.join(" "); 
             document.getElementById("answerArea").style.visibility = "visible"; document.getElementById("mainBtn").innerText = "下一步驟";
+
             if (document.getElementById("autoNext").checked) {
                 const delay = parseInt(document.getElementById("autoNextSec").value) || 2;
-                state.autoNextTimer = setTimeout(() => { if (state.isAnsMode) handleClick(); }, delay * 1000);
+                state.autoNextTimer = setTimeout(() => {
+                    if (state.isAnsMode) handleClick(); 
+                }, delay * 1000);
             }
+
         } else {
             state.stepIdx++; if (state.stepIdx >= steps.length) generateNewTask(); else renderStep();
         }
@@ -580,10 +643,12 @@
     }
 
     function renderStep() {
+        clearInterval(state.metroTimer);
         const sid = MODE_STEPS[document.getElementById("trainMode").value][state.stepIdx];
         state.isAnsMode = false; state.userInputs = []; 
         const sCont = document.getElementById("slotContainer"), qArea = document.getElementById("questionArea"), inst = document.getElementById("instruction");
         document.getElementById("answerArea").style.visibility = "hidden"; sCont.innerHTML = ""; qArea.innerHTML = "";
+        
         let instText = "";
         switch(sid) {
             case 10: case 50: instText = "音名 ➔ 唱名"; break;
@@ -592,21 +657,44 @@
             case 31: case 52: instText = "簡譜 ➔ 音名"; break;
             case 40: instText = "簡譜 ➔ 唱名"; break;
             case 41: case 51: instText = "唱名 ➔ 簡譜"; break;
-            case 60: instText = "純音名辨識 (按鈕:唱名)"; break;
-            case 61: instText = "純簡譜辨識 (按鈕:音名)"; break;
-            case 62: instText = "純唱名辨識 (按鈕:音名)"; break;
+            case 60: instText = "純音名辨識 (答題:唱名)"; break;
+            case 61: instText = "純簡譜辨識 (答題:音名)"; break;
+            case 62: instText = "純唱名辨識 (答題:音名)"; break;
         }
+
         state.notes.forEach((nIdx, i) => {
             let qType = 'num'; 
             if ([10, 30, 50, 60].includes(sid)) qType = 'nam'; 
             else if ([11, 41, 51, 62].includes(sid)) qType = 'sol';
-            qArea.innerHTML += `<div class="note-q-item" onclick="playNotes([${nIdx}], 'ans')">${getNoteLabel(nIdx, qType)}</div>`;
+            qArea.innerHTML += `<div class="note-q-item" id="qNote${i}" onclick="playNotes([${nIdx}], 'ans')">${getNoteLabel(nIdx, qType)}</div>`;
             sCont.innerHTML += `<div class="input-slot" id="slot${i}"></div>`;
         });
+
         const isSprintActive = (document.getElementById("timerMode").value === 'sprint' && state.isCurrentSprint);
         inst.innerHTML = instText + (isSprintActive ? ' <br><span class="sprint-text">🐾 快啊啊啊啊！！！</span>' : '');
-        renderKeyboard(); startTimer(); document.getElementById("mainBtn").innerText = "檢查答案";
-        playNotes(state.notes, 'quest');
+        renderKeyboard(); 
+        document.getElementById("mainBtn").innerText = "檢查答案";
+
+        // 節拍器邏輯整合
+        if (document.getElementById("metroOn").checked) {
+            const bpm = parseInt(document.getElementById("bpm").value) || 60;
+            const ms = 60000 / bpm;
+            let beat = 0;
+            state.metroTimer = setInterval(() => {
+                document.querySelectorAll('.note-q-item').forEach(el => el.classList.remove('active-note'));
+                if (beat < state.notes.length) {
+                    document.getElementById("qNote" + beat).classList.add('active-note');
+                    playNotes([state.notes[beat]], 'quest');
+                    beat++;
+                } else {
+                    clearInterval(state.metroTimer);
+                    if (!state.isAnsMode) handleClick();
+                }
+            }, ms);
+        } else {
+            startTimer();
+            playNotes(state.notes, 'quest');
+        }
     }
 
     function startTimer() {
@@ -624,12 +712,15 @@
         
         let targetType = 'nam'; 
         if ([10, 40, 50, 60].includes(sid)) targetType = 'sol'; 
-        else if ([30, 41, 51].includes(sid)) targetType = 'num';
-        
+        else if ([30, 41, 51, 61, 62].includes(sid)) targetType = 'num';
+        if ([31, 52, 61, 62].includes(sid)) targetType = 'nam';
+
         const pool = getSelectedPool(); kb.innerHTML = ""; kb.className = layout === 'harmonica' ? "keyboard kb-harmonica" : "keyboard kb-standard";
         let keys = [];
         if (layout === 'harmonica') {
-            HARM_INDEX_MAP.forEach(idx => { if (pool.includes(idx)) keys.push({ text: getNoteLabel(idx, targetType), idx: idx }); else keys.push({ text: "", idx: -1 }); });
+            HARM_INDEX_MAP.forEach(idx => {
+                if (pool.includes(idx)) keys.push({ text: getNoteLabel(idx, targetType), idx: idx }); else keys.push({ text: "", idx: -1 }); 
+            });
         } else {
             for(let i=0; i<8; i++) { if (pool.includes(i)) keys.push({ text: getNoteLabel(i, targetType), idx: i }); }
             if (document.getElementById("kbRandom").checked) keys.sort(() => Math.random() - 0.5);
