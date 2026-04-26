@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>橙色的樂理強化 v4.4.6</title>
+    <title>橙色的樂理強化 v4.4.8</title>
     <style>
         /* 🌿 護眼森林深色系變數 - 降低對比度，減少視覺疲勞 */
         :root { 
@@ -82,6 +82,10 @@
         .btn-save { background: var(--success); }
         .btn-del { background: #718093; color: white; flex: 0 0 40px; }
 
+        /* 🆕 匯出匯入樣式 */
+        .sync-area { margin-top: 15px; border-top: 1px dashed #485460; padding-top: 10px; }
+        .sync-input { width: 100%; background: #1e272e; color: #55efc4; border: 1px solid #485460; border-radius: 8px; padding: 8px; font-size: 0.75em; font-family: monospace; margin-bottom: 8px; resize: none; box-sizing: border-box; }
+
         .degree-picker { display: flex; justify-content: space-between; gap: 4px; margin-top: 5px; width: 100%; flex-wrap: wrap; }
         .deg-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #485460; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; color: #718093; background: #2f3640; transition: 0.2s; font-size: 0.85em; }
         .deg-btn.active { border-color: var(--success); color: #1e272e; background: var(--success); }
@@ -108,17 +112,16 @@
         .sprint-text { color: var(--error); animation: blink 1s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        /* 🛠️ 寬度微調核心：單行 8 音符橫向排版核心 CSS */
         .notes-display, .input-container { 
             display: flex; 
             justify-content: center; 
-            gap: 5px;           /* 縮小間距 */
+            gap: 5px; 
             flex-wrap: wrap; 
             margin-bottom: 15px; 
             width: 100%; 
         }
         .note-q-item { 
-            width: 50px;        /* 縮減寬度以利 8 個併排 */
+            width: 50px; 
             font-size: 1.6em; 
             font-weight: bold; 
             color: var(--primary); 
@@ -127,11 +130,10 @@
             transition: 0.15s; 
         }
         
-        /* 節拍器亮起樣式 */
         .note-q-item.active-note { color: var(--success); transform: scale(1.3); text-shadow: 0 0 15px var(--success); }
 
         .input-slot { 
-            width: 50px;        /* 同步調整答題欄位寬度 */
+            width: 50px; 
             height: 45px; 
             border-bottom: 3px solid #485460; 
             font-size: 1.1em; 
@@ -149,7 +151,7 @@
         .kb-standard { grid-template-columns: repeat(7, 1fr); }
         .kb-harmonica { grid-template-columns: repeat(4, 1fr); }
         
-        .key { padding: 15px 0; background: #353b48; border-radius: 12px; font-weight: bold; cursor: pointer; border: 1px solid #485460; box-shadow: 0 4px 0 #232a31; font-size: 0.85em; -webkit-tap-highlight-color: transparent; text-align: center; color: var(--text-main); }
+        .key { padding: 15px 0; background: #353b48; border-radius: 12px; font-weight: bold; cursor: pointer; border: 1px solid #485460; box-shadow: 0 4px 0 #232a31; font-size: 0.85em; -webkit-tap-highlight-color: transparent; text-align: center; color: var(--text-main); min-height: 1.2em; }
         .key:active { transform: translateY(2px); box-shadow: 0 2px 0 #232a31; }
         .key.hint-correct { background: var(--success) !important; color: #1e272e !important; }
         .key.control { background: #718093; color: white; grid-column: 1 / -1; margin-top: 4px; padding: 10px 0; font-size: 1.2em; }
@@ -179,7 +181,7 @@
         </div>
 
         <h1 class="app-title">橙色的樂理強化</h1>
-        <div class="version-tag" style="color:#718093; font-size:0.7em; font-family:monospace; margin-bottom:5px;">Version 4.4.6</div>
+        <div class="version-tag" style="color:#718093; font-size:0.7em; font-family:monospace; margin-bottom:5px;">Version 4.4.8</div>
         
         <div class="timer-group">
             <div id="sessionTimer" class="session-timer">Practice Time: 00:00</div>
@@ -192,6 +194,16 @@
                 <div class="preset-item" id="slot-1"></div>
                 <div class="preset-item" id="slot-2"></div>
                 <div class="preset-item" id="slot-3"></div>
+            </div>
+
+            <div class="sync-area">
+                <span class="group-title">🔄 跨裝置同步設定碼</span>
+                <textarea id="syncCodeBox" class="sync-input" rows="2" placeholder="在此貼上設定碼或點擊匯出..."></textarea>
+                <div style="display:flex; gap:8px;">
+                    <button class="preset-btn btn-load" onclick="exportSyncCode()" style="background:#3498db; color:white;">匯出全存檔 📤</button>
+                    <button class="preset-btn btn-save" onclick="importSyncCode()" style="background:#e67e22; color:white;">匯入全存檔 📥</button>
+                </div>
+                <div style="font-size:0.7em; color:#718093; margin-top:8px; line-height:1.2;">* 匯出會複製目前 3 個存檔位；匯入將會覆蓋此裝置的所有存檔。</div>
             </div>
         </div>
 
@@ -287,6 +299,8 @@
                 <div class="setting-item"><label>要延遲幾秒自動進入</label><input type="number" id="autoNextSec" value="2" min="1" style="width:45px"></div>
 
                 <div class="setting-item"><label>鍵盤亂序</label><input type="checkbox" id="kbRandom" onchange="renderKeyboard()"></div>
+                <div class="setting-item"><label>隱藏按鍵文字</label><input type="checkbox" id="hideKeyText" onchange="renderKeyboard()"></div>
+                
                 <div class="setting-item"><label>題目播放聲音</label><input type="checkbox" id="playQuestSound"></div>
                 <div class="setting-item"><label>作答播放聲音</label><input type="checkbox" id="playAnsSound" checked></div>
                 <div class="setting-item"><label>正解播放聲音</label><input type="checkbox" id="playCorrectSound" checked></div>
@@ -316,10 +330,11 @@
             <p>Made with ❤️ by <strong>EtOH58daidai</strong> & <strong>Gemini</strong></p>
             <p>有事情 TG: <a href="https://t.me/EtOH58daidai" target="_blank" style="color: #E67E22;">EtOH58daidai</a></p>
             <details class="changelog">
-                <summary>📜 更新日誌 v4.4.6</summary>
+                <summary>📜 更新日誌 v4.4.8</summary>
                 <ul style="padding-left: 20px; text-align: left;">
-                    <li><strong>v4.4.6</strong>: 優化顯示欄位寬度，確保 8 個音符可單行併排顯示。</li>
-                    <li><strong>v4.4.5</strong>: 整合節拍器 (BPM) 視覺引導與三種純模式 (音名/簡譜/唱名辨識)。</li>
+                    <li><strong>v4.4.8</strong>: 新增「設定碼匯出/匯入」功能，支援跨裝置手動同步存檔。</li>
+                    <li><strong>v4.4.7</strong>: 新增「隱藏按鍵文字」開關，支援盲打口琴鍵盤練習。</li>
+                    <li><strong>v4.4.6</strong>: 優化顯示欄位寬度，確保 8 音符可單行併排顯示。</li>
                 </ul>
             </details>
         </footer>
@@ -335,16 +350,47 @@
 
     let state = { notes: [], userInputs: [], stepIdx: 0, isAnsMode: false, ctx: null, timerInt: null, metroTimer: null, autoNextTimer: null, sessionStartTime: null, sessionTimerInt: null, isCurrentSprint: false };
     const MODE_STEPS = { 
-        map_ns: [10, 11], 
-        map_nn: [30, 31], 
-        map_sn: [40, 41], 
-        cycle: [50, 51, 52],
-        map_pure_nam: [60],
-        map_pure_num: [61],
-        map_pure_sol: [62]
+        map_ns: [10, 11], map_nn: [30, 31], map_sn: [40, 41], cycle: [50, 51, 52],
+        map_pure_nam: [60], map_pure_num: [61], map_pure_sol: [62]
     };
 
     window.onload = () => { updatePresetUI(); applySettings(); };
+
+    // --- 🆕 設定碼匯出匯入邏輯 ---
+    function exportSyncCode() {
+        const fullData = {
+            s1: localStorage.getItem("theory_preset_1"),
+            s2: localStorage.getItem("theory_preset_2"),
+            s3: localStorage.getItem("theory_preset_3"),
+            v: "4.4.8"
+        };
+        const code = btoa(encodeURIComponent(JSON.stringify(fullData))); // 轉成 Base64 方便複製
+        document.getElementById("syncCodeBox").value = code;
+        document.getElementById("syncCodeBox").select();
+        try {
+            document.execCommand('copy');
+            alert("設定碼已生成並複製到剪貼簿！請到另一裝置貼上。");
+        } catch(e) {
+            alert("設定碼已生成，請手動複製文字框內容。");
+        }
+    }
+
+    function importSyncCode() {
+        const code = document.getElementById("syncCodeBox").value.trim();
+        if (!code) { alert("請先在文字框貼入設定碼。"); return; }
+        if (!confirm("匯入將會覆蓋此裝置的所有 3 個存檔位，確定嗎？")) return;
+        
+        try {
+            const decoded = JSON.parse(decodeURIComponent(atob(code)));
+            if (decoded.s1) localStorage.setItem("theory_preset_1", decoded.s1);
+            if (decoded.s2) localStorage.setItem("theory_preset_2", decoded.s2);
+            if (decoded.s3) localStorage.setItem("theory_preset_3", decoded.s3);
+            alert("匯入成功！存檔已同步。");
+            updatePresetUI();
+        } catch(e) {
+            alert("無效的設定碼，請檢查是否複製完整。");
+        }
+    }
 
     // --- 存檔系統功能 ---
     function savePreset(slotIdx) {
@@ -377,6 +423,7 @@
             autoNext: document.getElementById("autoNext").checked,
             autoNextSec: document.getElementById("autoNextSec").value,
             kbRandom: document.getElementById("kbRandom").checked,
+            hideKeyText: document.getElementById("hideKeyText").checked,
             playQuestSound: document.getElementById("playQuestSound").checked,
             playAnsSound: document.getElementById("playAnsSound").checked,
             playCorrectSound: document.getElementById("playCorrectSound").checked,
@@ -407,6 +454,7 @@
         document.getElementById("autoNext").checked = config.autoNext || false;
         document.getElementById("autoNextSec").value = config.autoNextSec || 2;
         document.getElementById("kbRandom").checked = config.kbRandom;
+        document.getElementById("hideKeyText").checked = config.hideKeyText || false;
         document.getElementById("playQuestSound").checked = config.playQuestSound;
         document.getElementById("playAnsSound").checked = config.playAnsSound;
         document.getElementById("playCorrectSound").checked = config.playCorrectSound;
@@ -441,7 +489,6 @@
                         <span class="preset-name">${config.presetName}</span>
                         <span style="font-size:0.75em; color:#718093;">${config.saveDate}</span>
                     </div>
-                    <div style="font-size:0.8em; color:#bdc3c7; margin-top:4px;">${config.activeDegrees.length}音練習中...</div>
                     <div class="preset-actions" style="display:flex; gap:5px; margin-top:5px;">
                         <button class="preset-btn btn-load" onclick="loadPreset(${i})" style="flex:1;">讀取 📂</button>
                         <button class="preset-btn btn-save" onclick="savePreset(${i})" style="flex:1;">覆蓋 💾</button>
@@ -605,7 +652,7 @@
             let type = 'nam';
             if ([10, 40, 50, 60].includes(sid)) type = 'sol';
             else if ([30, 41, 51, 61, 62].includes(sid)) type = 'num';
-            if ([31, 52, 61, 62].includes(sid)) type = 'nam'; // 修正部分對應
+            if ([31, 52, 61, 62].includes(sid)) type = 'nam'; 
 
             const correct = state.notes.map(n => getNoteLabel(n, type));
             triggerSoulFloat(correct);
@@ -614,7 +661,7 @@
                 if (state.userInputs[i] === correct[i]) s.classList.add("slot-correct"); 
                 else { 
                     s.classList.add("slot-wrong"); s.innerText = state.userInputs[i] || "X"; 
-                    const keys = document.querySelectorAll('.key'); keys.forEach(k => { if(k.innerText === correct[i]) { k.classList.add('hint-correct'); setTimeout(()=>k.classList.remove('hint-correct'), 800); }}); 
+                    const keys = document.querySelectorAll('.key'); keys.forEach(k => { if(k.getAttribute('data-val') === correct[i]) { k.classList.add('hint-correct'); setTimeout(()=>k.classList.remove('hint-correct'), 800); }}); 
                 }
             });
             playNotes(state.notes, 'correct');
@@ -675,7 +722,6 @@
         renderKeyboard(); 
         document.getElementById("mainBtn").innerText = "檢查答案";
 
-        // 節拍器邏輯整合
         if (document.getElementById("metroOn").checked) {
             const bpm = parseInt(document.getElementById("bpm").value) || 60;
             const ms = 60000 / bpm;
@@ -709,6 +755,7 @@
     function renderKeyboard() {
         const kb = document.getElementById("keyboard"), layout = document.getElementById("layoutMode").value;
         const sid = MODE_STEPS[document.getElementById("trainMode").value][state.stepIdx];
+        const hideText = document.getElementById("hideKeyText").checked;
         
         let targetType = 'nam'; 
         if ([10, 40, 50, 60].includes(sid)) targetType = 'sol'; 
@@ -726,7 +773,10 @@
             if (document.getElementById("kbRandom").checked) keys.sort(() => Math.random() - 0.5);
         }
         keys.forEach(kObj => { 
-            const k = document.createElement("div"); k.className = "key"; k.innerText = kObj.text; if (kObj.idx === -1) k.style.visibility = "hidden";
+            const k = document.createElement("div"); k.className = "key"; 
+            k.setAttribute('data-val', kObj.text);
+            k.innerText = (hideText && kObj.idx !== -1) ? "" : kObj.text;
+            if (kObj.idx === -1) k.style.visibility = "hidden";
             k.onclick = () => { if (!state.isAnsMode && kObj.idx !== -1 && state.userInputs.length < state.notes.length) { state.userInputs.push(kObj.text); Array.from(document.querySelectorAll('.input-slot'))[state.userInputs.length-1].innerText = kObj.text; playNotes([kObj.idx], 'ans'); }};
             kb.appendChild(k); 
         });
