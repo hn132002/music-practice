@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>橙色的樂理強化 v4.4.8</title>
+    <title>橙色的樂理強化 v4.5.1</title>
     <style>
         /* 🌿 護眼森林深色系變數 - 降低對比度，減少視覺疲勞 */
         :root { 
@@ -61,6 +61,16 @@
 
         .info-panel { background: #353b48; border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; display: none; font-size: 0.85em; border: 1px solid #485460; max-height: none; overflow-y: visible; }
 
+        /* 📊 熱點分析表格樣式 */
+        #heatmapTable { width: 100%; border-collapse: collapse; font-size: 0.75em; text-align: center; margin-top: 10px; }
+        #heatmapTable th, #heatmapTable td { border: 1px solid #485460; padding: 6px 2px; }
+        #heatmapTable th { background: #2f3640; color: var(--primary); }
+        .heat-cell { font-weight: bold; border-radius: 3px; }
+        .lv-0 { background: #2ecc71; color: #1e272e; } /* 熟練 */
+        .lv-1 { background: #f1c40f; color: #1e272e; } /* 遲疑 */
+        .lv-2 { background: #e67e22; color: white; }   /* 頻繁錯誤 */
+        .lv-3 { background: #e74c3c; color: white; }   /* 重災區 */
+
         .setting-group { margin-bottom: 12px; border-bottom: 1px solid #485460; padding-bottom: 8px; }
         .group-title { font-weight: 800; color: var(--primary); display: block; margin-bottom: 8px; font-size: 1.1em; }
         .setting-item { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; }
@@ -82,7 +92,6 @@
         .btn-save { background: var(--success); }
         .btn-del { background: #718093; color: white; flex: 0 0 40px; }
 
-        /* 🆕 匯出匯入樣式 */
         .sync-area { margin-top: 15px; border-top: 1px dashed #485460; padding-top: 10px; }
         .sync-input { width: 100%; background: #1e272e; color: #55efc4; border: 1px solid #485460; border-radius: 8px; padding: 8px; font-size: 0.75em; font-family: monospace; margin-bottom: 8px; resize: none; box-sizing: border-box; }
 
@@ -172,20 +181,29 @@
             <div class="nav-group">
                 <div class="nav-item" onclick="togglePanel('pianoPanel')">🎹</div>
                 <div class="nav-item" onclick="togglePanel('theoryPanel')">📚</div>
-                <div class="nav-item" onclick="togglePanel('presetPanel')">📑</div>
+                <div class="nav-item" onclick="togglePanel('heatmapPanel')">📊</div>
             </div>
             <div class="nav-group">
                 <div class="nav-item" onclick="fullReset()">🏠</div>
+                <div class="nav-item" onclick="togglePanel('presetPanel')">📑</div>
                 <div class="nav-item" onclick="togglePanel('settingsPanel')">⚙️</div>
             </div>
         </div>
 
         <h1 class="app-title">橙色的樂理強化</h1>
-        <div class="version-tag" style="color:#718093; font-size:0.7em; font-family:monospace; margin-bottom:5px;">Version 4.4.8</div>
+        <div class="version-tag" style="color:#718093; font-size:0.7em; font-family:monospace; margin-bottom:5px;">Version 4.5.1</div>
         
         <div class="timer-group">
             <div id="sessionTimer" class="session-timer">Practice Time: 00:00</div>
             <div id="baseStatus" class="base-status"></div>
+        </div>
+
+        <div id="heatmapPanel" class="info-panel">
+            <span class="group-title">📊 練習盲點分析 (僅顯示已練習調性)</span>
+            <div style="overflow-x: auto;">
+                <table id="heatmapTable"></table>
+            </div>
+            <button onclick="clearStats()" style="margin-top:12px; width:100%; padding:10px; background:#718093; color:white; border:none; border-radius:8px; font-weight:bold;">重置所有統計數據</button>
         </div>
 
         <div id="presetPanel" class="info-panel">
@@ -214,6 +232,7 @@
                 <br>• <b>固定調 (Fixed)</b>：Do 永遠等於 C。</div>
             <div class="concept-card" style="border-left-color: var(--success);"><b>2. 固定唱名</b>：C=Do, D=Re, E=Mi, F=Fa, G=Sol, A=La, B=Si。</div>
             <div class="concept-card" style="border-left-color: #f39c12;"><b>3. 節拍器系統</b>：開啟引導後題目隨拍亮起，結束後自動結算答案。</div>
+            <div class="concept-card" style="border-left-color: #81ecec;"><b>4. 熱點分析</b>：記錄你在各調性的正確率，幫助精準分配練習時間。</div>
         </div>
 
         <div id="pianoPanel" class="info-panel">
@@ -330,8 +349,9 @@
             <p>Made with ❤️ by <strong>EtOH58daidai</strong> & <strong>Gemini</strong></p>
             <p>有事情 TG: <a href="https://t.me/EtOH58daidai" target="_blank" style="color: #E67E22;">EtOH58daidai</a></p>
             <details class="changelog">
-                <summary>📜 更新日誌 v4.4.8</summary>
+                <summary>📜 更新日誌 v4.5.1</summary>
                 <ul style="padding-left: 20px; text-align: left;">
+                    <li><strong>v4.5.1</strong>: 新增「練習熱點分析」，動態顯示已練習調性之正確率。</li>
                     <li><strong>v4.4.8</strong>: 新增「設定碼匯出/匯入」功能，支援跨裝置手動同步存檔。</li>
                     <li><strong>v4.4.7</strong>: 新增「隱藏按鍵文字」開關，支援盲打口琴鍵盤練習。</li>
                     <li><strong>v4.4.6</strong>: 優化顯示欄位寬度，確保 8 音符可單行併排顯示。</li>
@@ -356,20 +376,75 @@
 
     window.onload = () => { updatePresetUI(); applySettings(); };
 
+    // --- 📊 熱點分析核心邏輯 ---
+    function recordStat(rootName, degreeIdx, isCorrect) {
+        let stats = JSON.parse(localStorage.getItem('theory_heatmap')) || {};
+        const degreeLabel = degreeIdx + 1; // 轉為 1-7 顯示
+        if (!stats[rootName]) stats[rootName] = {};
+        if (!stats[rootName][degreeLabel]) stats[rootName][degreeLabel] = { c: 0, w: 0 };
+
+        if (isCorrect) stats[rootName][degreeLabel].c++;
+        else stats[rootName][degreeLabel].w++;
+
+        localStorage.setItem('theory_heatmap', JSON.stringify(stats));
+    }
+
+    function renderHeatmap() {
+        const stats = JSON.parse(localStorage.getItem('theory_heatmap')) || {};
+        const table = document.getElementById("heatmapTable");
+        
+        // 檢查是否有數據
+        const practicedKeys = Object.keys(stats);
+        if (practicedKeys.length === 0) {
+            table.innerHTML = "<tr><td style='padding:20px; color:#718093;'>尚無練習數據。請先開始練習題目。</td></tr>";
+            return;
+        }
+
+        let html = `<tr><th>調性</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th></tr>`;
+        PITCH_NAMES.forEach(root => {
+            if (stats[root]) { // 只顯示有數據的調性
+                html += `<tr><td style="background:#3d444d; font-weight:bold;">${root}</td>`;
+                for (let deg = 1; deg <= 7; deg++) {
+                    const data = stats[root][deg] || { c: 0, w: 0 };
+                    const total = data.c + data.w;
+                    let lv = "", display = "-";
+                    if (total > 0) {
+                        const err = data.w / total;
+                        display = Math.round(err * 100) + "%";
+                        if (err < 0.1) lv = "lv-0";
+                        else if (err < 0.25) lv = "lv-1";
+                        else if (err < 0.5) lv = "lv-2";
+                        else lv = "lv-3";
+                    }
+                    html += `<td class="heat-cell ${lv}" title="正確:${data.c}, 錯誤:${data.w}">${display}</td>`;
+                }
+                html += `</tr>`;
+            }
+        });
+        table.innerHTML = html;
+    }
+
+    function clearStats() {
+        if (confirm("確定要重置所有練習熱點數據嗎？這將無法恢復。")) {
+            localStorage.removeItem('theory_heatmap');
+            renderHeatmap();
+        }
+    }
+
     // --- 🆕 設定碼匯出匯入邏輯 ---
     function exportSyncCode() {
         const fullData = {
             s1: localStorage.getItem("theory_preset_1"),
             s2: localStorage.getItem("theory_preset_2"),
             s3: localStorage.getItem("theory_preset_3"),
-            v: "4.4.8"
+            v: "4.5.1"
         };
-        const code = btoa(encodeURIComponent(JSON.stringify(fullData))); // 轉成 Base64 方便複製
+        const code = btoa(encodeURIComponent(JSON.stringify(fullData))); 
         document.getElementById("syncCodeBox").value = code;
         document.getElementById("syncCodeBox").select();
         try {
             document.execCommand('copy');
-            alert("設定碼已生成並複製到剪貼簿！請到另一裝置貼上。");
+            alert("設定碼已生成並複製到剪貼簿！");
         } catch(e) {
             alert("設定碼已生成，請手動複製文字框內容。");
         }
@@ -378,17 +453,16 @@
     function importSyncCode() {
         const code = document.getElementById("syncCodeBox").value.trim();
         if (!code) { alert("請先在文字框貼入設定碼。"); return; }
-        if (!confirm("匯入將會覆蓋此裝置的所有 3 個存檔位，確定嗎？")) return;
-        
+        if (!confirm("匯入將會覆蓋此裝置的所有存檔位，確定嗎？")) return;
         try {
             const decoded = JSON.parse(decodeURIComponent(atob(code)));
             if (decoded.s1) localStorage.setItem("theory_preset_1", decoded.s1);
             if (decoded.s2) localStorage.setItem("theory_preset_2", decoded.s2);
             if (decoded.s3) localStorage.setItem("theory_preset_3", decoded.s3);
-            alert("匯入成功！存檔已同步。");
+            alert("匯入成功！");
             updatePresetUI();
         } catch(e) {
-            alert("無效的設定碼，請檢查是否複製完整。");
+            alert("無效的設定碼。");
         }
     }
 
@@ -397,15 +471,12 @@
         const oldRaw = localStorage.getItem(`theory_preset_${slotIdx}`);
         let defaultName = "我的練習設定 " + slotIdx;
         if (oldRaw) defaultName = JSON.parse(oldRaw).presetName;
-
         const userInput = prompt("請輸入存檔名稱：", defaultName);
         if (userInput === null) return;
-
         const activeDegrees = [];
         for (let i = 0; i < 8; i++) {
             if (document.getElementById(`deg${i}`).classList.contains('active')) activeDegrees.push(i);
         }
-
         const config = {
             presetName: userInput || "未命名存檔",
             namingSystem: document.getElementById("namingSystem").value,
@@ -430,7 +501,6 @@
             solTypeSo: document.getElementById("solTypeSo").checked,
             saveDate: new Date().toLocaleString()
         };
-
         localStorage.setItem(`theory_preset_${slotIdx}`, JSON.stringify(config));
         updatePresetUI();
     }
@@ -439,7 +509,6 @@
         const raw = localStorage.getItem(`theory_preset_${slotIdx}`);
         if (!raw) return;
         const config = JSON.parse(raw);
-
         document.getElementById("namingSystem").value = config.namingSystem;
         document.getElementById("trainMode").value = config.trainMode;
         document.getElementById("layoutMode").value = config.layoutMode;
@@ -460,13 +529,11 @@
         document.getElementById("playCorrectSound").checked = config.playCorrectSound;
         document.getElementById("solTypeSo").checked = config.solTypeSo;
         document.getElementById("solTypeSol").checked = !config.solTypeSo;
-
         for (let i = 0; i < 8; i++) {
             const btn = document.getElementById(`deg${i}`);
             if (config.activeDegrees.includes(i)) btn.classList.add('active');
             else btn.classList.remove('active');
         }
-
         applySettings();
     }
 
@@ -481,27 +548,11 @@
         for (let i = 1; i <= 3; i++) {
             const slot = document.getElementById(`slot-${i}`);
             const raw = localStorage.getItem(`theory_preset_${i}`);
-            
             if (raw) {
                 const config = JSON.parse(raw);
-                slot.innerHTML = `
-                    <div class="preset-info">
-                        <span class="preset-name">${config.presetName}</span>
-                        <span style="font-size:0.75em; color:#718093;">${config.saveDate}</span>
-                    </div>
-                    <div class="preset-actions" style="display:flex; gap:5px; margin-top:5px;">
-                        <button class="preset-btn btn-load" onclick="loadPreset(${i})" style="flex:1;">讀取 📂</button>
-                        <button class="preset-btn btn-save" onclick="savePreset(${i})" style="flex:1;">覆蓋 💾</button>
-                        <button class="preset-btn btn-del" onclick="deletePreset(${i})">🗑️</button>
-                    </div>
-                `;
+                slot.innerHTML = `<div class="preset-info"><span class="preset-name">${config.presetName}</span><span style="font-size:0.75em; color:#718093;">${config.saveDate}</span></div><div class="preset-actions" style="display:flex; gap:5px; margin-top:5px;"><button class="preset-btn btn-load" onclick="loadPreset(${i})" style="flex:1;">讀取 📂</button><button class="preset-btn btn-save" onclick="savePreset(${i})" style="flex:1;">覆蓋 💾</button><button class="preset-btn btn-del" onclick="deletePreset(${i})">🗑️</button></div>`;
             } else {
-                slot.innerHTML = `
-                    <div class="preset-info"><span style="color:#bdc3c7">空存檔位 ${i}</span></div>
-                    <div class="preset-actions" style="margin-top:4px;">
-                        <button class="preset-btn btn-save" onclick="savePreset(${i})" style="width:100%">建立存檔 💾</button>
-                    </div>
-                `;
+                slot.innerHTML = `<div class="preset-info"><span style="color:#bdc3c7">空存檔位 ${i}</span></div><div class="preset-actions" style="margin-top:4px;"><button class="preset-btn btn-save" onclick="savePreset(${i})" style="width:100%">建立存檔 💾</button></div>`;
             }
         }
     }
@@ -509,7 +560,7 @@
     // --- 核心邏輯 ---
     function fullReset() {
         clearInterval(state.timerInt); clearInterval(state.metroTimer);
-        clearInterval(state.sessionTimerInt);
+        clearInterval(state.sessionStartTime ? state.sessionTimerInt : null);
         clearTimeout(state.autoNextTimer);
         state.timerInt = state.sessionTimerInt = state.sessionStartTime = state.autoNextTimer = state.metroTimer = null;
         state.notes = []; state.userInputs = []; state.stepIdx = 0; state.isAnsMode = false; state.isCurrentSprint = false;
@@ -586,6 +637,7 @@
         document.querySelectorAll('.info-panel').forEach(el => el.style.display = 'none'); 
         p.style.display = isShow ? 'none' : 'block'; 
         if (id === 'presetPanel') updatePresetUI();
+        if (id === 'heatmapPanel') renderHeatmap();
     }
     
     function updateModeUI() { 
@@ -656,14 +708,21 @@
 
             const correct = state.notes.map(n => getNoteLabel(n, type));
             triggerSoulFloat(correct);
-            state.notes.forEach((_, i) => { 
+
+            const rootIdx = document.getElementById("baseRoot").value;
+            const rootName = PITCH_NAMES[rootIdx];
+
+            state.notes.forEach((nIdx, i) => { 
                 const s = document.getElementById("slot" + i); 
-                if (state.userInputs[i] === correct[i]) s.classList.add("slot-correct"); 
+                const isCorrect = (state.userInputs[i] === correct[i]);
+                recordStat(rootName, nIdx, isCorrect);
+                if (isCorrect) s.classList.add("slot-correct"); 
                 else { 
                     s.classList.add("slot-wrong"); s.innerText = state.userInputs[i] || "X"; 
                     const keys = document.querySelectorAll('.key'); keys.forEach(k => { if(k.getAttribute('data-val') === correct[i]) { k.classList.add('hint-correct'); setTimeout(()=>k.classList.remove('hint-correct'), 800); }}); 
                 }
             });
+
             playNotes(state.notes, 'correct');
             document.getElementById("answerArea").innerText = "正解：" + correct.join(" "); 
             document.getElementById("answerArea").style.visibility = "visible"; document.getElementById("mainBtn").innerText = "下一步驟";
@@ -674,7 +733,6 @@
                     if (state.isAnsMode) handleClick(); 
                 }, delay * 1000);
             }
-
         } else {
             state.stepIdx++; if (state.stepIdx >= steps.length) generateNewTask(); else renderStep();
         }
